@@ -1,5 +1,6 @@
 package com.juzi.flymsg.service.impl;
 
+import com.juzi.flymsg.model.dto.UserRegistryRequest;
 import com.juzi.flymsg.service.UserInfoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,10 +19,16 @@ class UserInfoServiceImplDemoTest {
 
     @Test
     void userRegistry() {
-        String userAccount = "codejuzi2";
+        String userAccount = "codejuzi5";
         String userPassword = "12345678";
         String checkedPassword = "12345678";
-        Long userId = userInfoService.userRegistry(userAccount, userPassword, checkedPassword);
+        // 封装请求
+        UserRegistryRequest userRegistryRequest = new UserRegistryRequest();
+        userRegistryRequest.setUserAccount(userAccount);
+        userRegistryRequest.setUserPassword(userPassword);
+        userRegistryRequest.setCheckedPassword(checkedPassword);
+
+        Long userId = userInfoService.userRegistry(userRegistryRequest);
         System.out.println("userId = " + userId);
     }
 }

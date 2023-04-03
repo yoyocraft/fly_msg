@@ -1,5 +1,6 @@
 package com.juzi.flymsg.service;
 
+import com.juzi.flymsg.model.dto.UserRegistryRequest;
 import com.juzi.flymsg.model.entity.UserInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,10 +14,8 @@ public interface UserInfoService extends IService<UserInfo> {
     /**
      * 用户注册
      *
-     * @param userAccount     用户账号
-     * @param userPassword    用户密码
-     * @param checkedPassword 校验密码
+     * @param userRegistryRequest 用户注册请求对象信息
      * @return 用户id
      */
-    Long userRegistry(String userAccount, String userPassword, String checkedPassword);
+    Long userRegistry(UserRegistryRequest userRegistryRequest);
 }

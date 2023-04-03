@@ -1,14 +1,14 @@
 package com.juzi.flymsg.controller;
 
+import com.juzi.flymsg.model.dto.UserLoginRequest;
+import com.juzi.flymsg.model.dto.UserRegistryRequest;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
+import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.service.UserInfoService;
 import com.juzi.flymsg.service.UserLoginInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -29,28 +29,35 @@ public class UserInfoController {
     private UserLoginInfoService userLoginInfoService;
 
     @PostMapping("/registry")
-    public Long userRegistry(String userAccount, String userPassword, String checkedPassword) {
+    public Long userRegistry(@RequestBody UserRegistryRequest userRegistryRequest) {
         log.info("userRegistry....");
+
+        String userAccount = userRegistryRequest.getUserAccount();
+        String userPassword = userRegistryRequest.getUserPassword();
+        String checkedPassword = userRegistryRequest.getCheckedPassword();
+
         // 简单校验
-        if(StringUtils.isAnyBlank(userAccount, userPassword, checkedPassword)) {
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkedPassword)) {
             throw new RuntimeException("参数异常");
         }
 
-        return userInfoService.userRegistry(userAccount, userPassword, checkedPassword);
+        return userInfoService.userRegistry(userRegistryRequest);
     }
 
     @PostMapping("/login")
-    public Long userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+    public Long userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
         log.info("userLogin....");
+        String userAccount = userLoginRequest.getUserAccount();
+        String userPassword = userLoginRequest.getUserPassword();
         // 简单校验
-        if(StringUtils.isAnyBlank(userAccount, userPassword)) {
+        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
             throw new RuntimeException("参数异常");
         }
-        return userLoginInfoService.userLogin(userAccount, userPassword, request);
+        return userLoginInfoService.userLogin(userLoginRequest, request);
     }
 
     @GetMapping("/current")
-    public UserLoginInfo getCurrentUser(HttpServletRequest request) {
+    public UserInfoVO getCurrentUser(HttpServletRequest request) {
         return userLoginInfoService.getCurrentUser(request);
     }
 

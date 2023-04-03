@@ -1,7 +1,9 @@
 package com.juzi.flymsg.service;
 
+import com.juzi.flymsg.model.dto.UserLoginRequest;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.juzi.flymsg.model.vo.UserInfoVO;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -15,23 +17,23 @@ public interface UserLoginInfoService extends IService<UserLoginInfo> {
     /**
      * 用户登录
      *
-     * @param userAccount  用户账号
-     * @param userPassword 用户密码
-     * @param request      request域对象
+     * @param userLoginRequest 用户登录请求对象信息
+     * @param request          request域对象
      * @return 用户id
      */
-    Long userLogin(String userAccount, String userPassword, HttpServletRequest request);
+    Long userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request);
 
     /**
      * 获取当前登录用户
      *
      * @param request request域对象
-     * @return 用户登录信息
+     * @return 脱敏后的用户登录信息
      */
-    UserLoginInfo getCurrentUser(HttpServletRequest request);
+    UserInfoVO getCurrentUser(HttpServletRequest request);
 
     /**
      * 用户登出
+     *
      * @param request request域对象
      * @return true - 退出成功
      */

@@ -1,5 +1,7 @@
 package com.juzi.flymsg.service.impl;
 
+import cn.hutool.json.JSONUtil;
+import com.juzi.flymsg.model.dto.UserRegistryRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.DigestUtils;
 
@@ -20,5 +22,16 @@ public class DemoTest {
         String s2 = DigestUtils.md5DigestAsHex((salt + userPassword).getBytes(StandardCharsets.UTF_8));
         System.out.println("s2 = " + s2);
         System.out.println("s = " + s);
+    }
+
+    @Test
+    public void testJson() {
+        String json = "{\n" +
+                "  \"userAccount\": \"codejuzi9\",\n" +
+                "  \"userPassword\": \"12345678\",\n" +
+                "  \"checkedPassword\": \"12345678\"\n" +
+                "}";
+        UserRegistryRequest userRegistryRequest = JSONUtil.toBean(json, UserRegistryRequest.class);
+        System.out.println("userRegistryRequest = " + userRegistryRequest);
     }
 }
