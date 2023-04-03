@@ -19,7 +19,7 @@ class UserInfoServiceImplDemoTest {
 
     @Test
     void userRegistry() {
-        String userAccount = "codejuzi5";
+        String userAccount = "codejuzi";
         String userPassword = "12345678";
         String checkedPassword = "12345678";
         // 封装请求

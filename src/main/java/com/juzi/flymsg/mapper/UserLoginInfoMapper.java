@@ -13,6 +13,12 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface UserLoginInfoMapper extends BaseMapper<UserLoginInfo> {
 
+    /**
+     * 根据userAccount判断账号是否存在
+     * @param userAccount 用户账号
+     * @return 用户登录表中的信息
+     */
+    UserLoginInfo isExist(String userAccount);
 }
 
 

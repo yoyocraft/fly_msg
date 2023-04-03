@@ -46,9 +46,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         ValidCheckUtil.registryCheck(userAccount, userPassword, checkedPassword);
 //        g. 账号不能重复 => 查数据库
         // select id, userAccount, userPassword from userLoginInfo where userAccount = 'user1';
-        LambdaQueryWrapper<UserLoginInfo> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(UserLoginInfo::getUserAccount, userAccount);
-        UserLoginInfo userLoginInfo = userLoginInfoMapper.selectOne(queryWrapper);
+        UserLoginInfo userLoginInfo = userLoginInfoMapper.isExist(userAccount);
         if(userLoginInfo != null) {
             throw new RuntimeException("账号已经存在");
         }

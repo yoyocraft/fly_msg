@@ -19,4 +19,7 @@
         userPassword,createTime,updateTime,
         isDelete
     </sql>
+    <select id="isExist" resultType="UserLoginInfo">
+        select userId, userAccount, userPassword from userLoginInfo where userAccount = #{userAccount};
+    </select>
 </mapper>

@@ -2,7 +2,6 @@ package com.juzi.flymsg.controller;
 
 import com.juzi.flymsg.model.dto.UserLoginRequest;
 import com.juzi.flymsg.model.dto.UserRegistryRequest;
-import com.juzi.flymsg.model.entity.UserLoginInfo;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.service.UserInfoService;
 import com.juzi.flymsg.service.UserLoginInfoService;
