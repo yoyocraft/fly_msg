@@ -2,21 +2,19 @@ package com.juzi.flymsg.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.juzi.flymsg.mapper.UserLoginInfoMapper;
 import com.juzi.flymsg.model.dto.UserLoginRequest;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.service.UserLoginInfoService;
-import com.juzi.flymsg.mapper.UserLoginInfoMapper;
 import com.juzi.flymsg.utils.ValidCheckUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.nio.charset.StandardCharsets;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.juzi.flymsg.constant.UserConstant.SALT;
 import static com.juzi.flymsg.constant.UserConstant.USER_LOGIN_STATE;
@@ -45,7 +43,7 @@ public class UserLoginInfoServiceImpl extends ServiceImpl<UserLoginInfoMapper, U
         }
         // 3、比较密码
         String encryptPasswordInDb = userLoginInfo.getUserPassword();
-        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes(StandardCharsets.UTF_8));
         if (!encryptPasswordInDb.equals(encryptPassword)) {
             throw new RuntimeException("密码不正确");
         }
