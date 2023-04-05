@@ -1,10 +1,14 @@
 package com.juzi.flymsg.controller;
 
+import com.juzi.flymsg.common.BaseResponse;
+import com.juzi.flymsg.common.ErrorCode;
+import com.juzi.flymsg.exception.BusinessException;
 import com.juzi.flymsg.model.dto.UserLoginRequest;
 import com.juzi.flymsg.model.dto.UserRegistryRequest;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.service.UserInfoService;
 import com.juzi.flymsg.service.UserLoginInfoService;
+import com.juzi.flymsg.utils.ResultUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +32,7 @@ public class UserInfoController {
     private UserLoginInfoService userLoginInfoService;
 
     @PostMapping("/registry")
-    public Long userRegistry(@RequestBody UserRegistryRequest userRegistryRequest) {
+    public BaseResponse<Long> userRegistry(@RequestBody UserRegistryRequest userRegistryRequest) {
         log.info("userRegistry....");
 
         String userAccount = userRegistryRequest.getUserAccount();
@@ -37,10 +41,11 @@ public class UserInfoController {
 
         // 简单校验
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkedPassword)) {
-            throw new RuntimeException("参数异常");
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
 
-        return userInfoService.userRegistry(userRegistryRequest);
+        Long userId = userInfoService.userRegistry(userRegistryRequest);
+        return ResultUtil.success(userId);
     }
 
     @PostMapping("/login")
@@ -50,7 +55,7 @@ public class UserInfoController {
         String userPassword = userLoginRequest.getUserPassword();
         // 简单校验
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            throw new RuntimeException("参数异常");
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
         return userLoginInfoService.userLogin(userLoginRequest, request);
     }

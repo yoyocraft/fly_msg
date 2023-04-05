@@ -1,6 +1,8 @@
 package com.juzi.flymsg.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.juzi.flymsg.common.ErrorCode;
+import com.juzi.flymsg.exception.BusinessException;
 import com.juzi.flymsg.mapper.UserInfoMapper;
 import com.juzi.flymsg.mapper.UserLoginInfoMapper;
 import com.juzi.flymsg.model.dto.UserRegistryRequest;
@@ -41,7 +43,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         // select id, userAccount, userPassword from userLoginInfo where userAccount = 'user1';
         UserLoginInfo userLoginInfo = userLoginInfoMapper.isExist(userAccount);
         if(userLoginInfo != null) {
-            throw new RuntimeException("账号已经存在");
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "账号已经存在");
         }
 
         //2、加密

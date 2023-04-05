@@ -2,6 +2,8 @@ package com.juzi.flymsg.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.juzi.flymsg.common.ErrorCode;
+import com.juzi.flymsg.exception.BusinessException;
 import com.juzi.flymsg.mapper.UserLoginInfoMapper;
 import com.juzi.flymsg.model.dto.UserLoginRequest;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
@@ -39,13 +41,13 @@ public class UserLoginInfoServiceImpl extends ServiceImpl<UserLoginInfoMapper, U
         queryWrapper.eq(UserLoginInfo::getUserAccount, userAccount);
         UserLoginInfo userLoginInfo = this.getOne(queryWrapper);
         if (userLoginInfo == null) {
-            throw new RuntimeException("账号不存在");
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "账号已经存在");
         }
         // 3、比较密码
         String encryptPasswordInDb = userLoginInfo.getUserPassword();
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes(StandardCharsets.UTF_8));
         if (!encryptPasswordInDb.equals(encryptPassword)) {
-            throw new RuntimeException("密码不正确");
+            throw new BusinessException(ErrorCode.PARAM_ERROR, "密码不正确");
         }
         // 4、保存用户登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, userLoginInfo);
@@ -57,7 +59,7 @@ public class UserLoginInfoServiceImpl extends ServiceImpl<UserLoginInfoMapper, U
     public UserInfoVO getCurrentUser(HttpServletRequest request) {
         UserLoginInfo userLoginInfo = (UserLoginInfo) request.getSession().getAttribute(USER_LOGIN_STATE);
         if (userLoginInfo == null) {
-            throw new RuntimeException("用户未登录");
+            throw new BusinessException(ErrorCode.NO_LOGIN);
         }
         UserInfoVO userInfoVO = new UserInfoVO();
         BeanUtils.copyProperties(userLoginInfo, userInfoVO);
