@@ -1,22 +1,21 @@
 package com.juzi.flymsg.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.juzi.flymsg.mapper.UserInfoMapper;
 import com.juzi.flymsg.mapper.UserLoginInfoMapper;
 import com.juzi.flymsg.model.dto.UserRegistryRequest;
 import com.juzi.flymsg.model.entity.UserInfo;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
 import com.juzi.flymsg.service.UserInfoService;
-import com.juzi.flymsg.mapper.UserInfoMapper;
 import com.juzi.flymsg.utils.ValidCheckUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.nio.charset.StandardCharsets;
+
+import static com.juzi.flymsg.constant.UserConstant.SALT;
 
 /**
  * @author codejuzi
@@ -26,12 +25,6 @@ import java.util.regex.Pattern;
 @Service
 public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         implements UserInfoService {
-
-
-    /**
-     * 盐值
-     */
-    private static final String SALT = "fly_msg";
 
     @Resource
     private UserLoginInfoMapper userLoginInfoMapper;
@@ -52,7 +45,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         }
 
         //2、加密
-        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes(StandardCharsets.UTF_8));
 
         // 3、插入数据库
         UserInfo userInfo = new UserInfo();
