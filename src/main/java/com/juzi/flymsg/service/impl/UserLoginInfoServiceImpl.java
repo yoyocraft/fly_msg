@@ -56,17 +56,6 @@ public class UserLoginInfoServiceImpl extends ServiceImpl<UserLoginInfoMapper, U
     }
 
     @Override
-    public UserInfoVO getCurrentUser(HttpServletRequest request) {
-        UserLoginInfo userLoginInfo = (UserLoginInfo) request.getSession().getAttribute(USER_LOGIN_STATE);
-        if (userLoginInfo == null) {
-            throw new BusinessException(ErrorCode.NO_LOGIN);
-        }
-        UserInfoVO userInfoVO = new UserInfoVO();
-        BeanUtils.copyProperties(userLoginInfo, userInfoVO);
-        return userInfoVO;
-    }
-
-    @Override
     public Boolean userLogout(HttpServletRequest request) {
         // 移除用户登录态
         request.getSession().removeAttribute(USER_LOGIN_STATE);

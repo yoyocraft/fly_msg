@@ -27,5 +27,6 @@ public class UserInfoVO implements Serializable {
      */
     private String userAccount;
 
+
     private static final long serialVersionUID = 1L;
 }

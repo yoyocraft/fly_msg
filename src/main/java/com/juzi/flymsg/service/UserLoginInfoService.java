@@ -24,14 +24,6 @@ public interface UserLoginInfoService extends IService<UserLoginInfo> {
     Long userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request);
 
     /**
-     * 获取当前登录用户
-     *
-     * @param request request域对象
-     * @return 脱敏后的用户登录信息
-     */
-    UserInfoVO getCurrentUser(HttpServletRequest request);
-
-    /**
      * 用户登出
      *
      * @param request request域对象

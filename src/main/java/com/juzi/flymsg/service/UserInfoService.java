@@ -1,8 +1,13 @@
 package com.juzi.flymsg.service;
 
 import com.juzi.flymsg.model.dto.UserRegistryRequest;
+import com.juzi.flymsg.model.dto.UserSelectRequest;
+import com.juzi.flymsg.model.dto.UserUpdateRequest;
 import com.juzi.flymsg.model.entity.UserInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.juzi.flymsg.model.vo.UserVO;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author codejuzi
@@ -18,4 +23,30 @@ public interface UserInfoService extends IService<UserInfo> {
      * @return 用户id
      */
     Long userRegistry(UserRegistryRequest userRegistryRequest);
+
+    /**
+     * 删除用户，仅管理员可操作
+     *
+     * @param userId  待删除的user id
+     * @param request request 域对象
+     * @return true - 删除成功（逻辑删除）
+     */
+    boolean userDelete(Long userId, HttpServletRequest request);
+
+    /**
+     * 修改用户信息
+     *
+     * @param userUpdateRequest 用户修改请求信息
+     * @param request           request域对象
+     * @return true - 修改成功
+     */
+    boolean userUpdate(UserUpdateRequest userUpdateRequest, HttpServletRequest request);
+
+    /**
+     * 根据id查询单个用户对象
+     *
+     * @param userId 用户id
+     * @return userVO
+     */
+    UserVO userSelectOne(Long userId);
 }
