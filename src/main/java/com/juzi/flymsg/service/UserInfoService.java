@@ -48,5 +48,5 @@ public interface UserInfoService extends IService<UserInfo> {
      * @param userId 用户id
      * @return userVO
      */
-    UserVO userSelectOne(Long userId);
+    UserVO userSelectById(Long userId);
 }

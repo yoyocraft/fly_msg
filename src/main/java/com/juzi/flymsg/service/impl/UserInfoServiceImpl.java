@@ -1,6 +1,5 @@
 package com.juzi.flymsg.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.juzi.flymsg.common.ErrorCode;
@@ -9,7 +8,6 @@ import com.juzi.flymsg.manager.UserManager;
 import com.juzi.flymsg.mapper.UserInfoMapper;
 import com.juzi.flymsg.mapper.UserLoginInfoMapper;
 import com.juzi.flymsg.model.dto.UserRegistryRequest;
-import com.juzi.flymsg.model.dto.UserSelectRequest;
 import com.juzi.flymsg.model.dto.UserUpdateRequest;
 import com.juzi.flymsg.model.entity.UserInfo;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
@@ -45,7 +43,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
     private UserLoginInfoMapper userLoginInfoMapper;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = BusinessException.class)
     public Long userRegistry(UserRegistryRequest userRegistryRequest) {
         String userAccount = userRegistryRequest.getUserAccount();
         String userPassword = userRegistryRequest.getUserPassword();
@@ -145,7 +143,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
     }
 
     @Override
-    public UserVO userSelectOne(Long userId) {
+    public UserVO userSelectById(Long userId) {
         if(userId == null || userId <= 0) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
