@@ -105,7 +105,7 @@ public class UserInfoController {
         if(userId == null || userId <= 0) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
-        UserVO userVO = userInfoService.userSelectOne(userId);
+        UserVO userVO = userInfoService.userSelectById(userId);
         return ResultUtil.success(userVO);
     }
 
