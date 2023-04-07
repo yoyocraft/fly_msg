@@ -1,9 +1,8 @@
 package com.juzi.flymsg.service;
 
-import com.juzi.flymsg.model.dto.UserLoginRequest;
+import com.juzi.flymsg.model.dto.user.UserLoginRequest;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.juzi.flymsg.model.vo.UserInfoVO;
 
 import javax.servlet.http.HttpServletRequest;
 

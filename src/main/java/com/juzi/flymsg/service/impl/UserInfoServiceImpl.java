@@ -8,13 +8,14 @@ import com.juzi.flymsg.exception.BusinessException;
 import com.juzi.flymsg.manager.UserManager;
 import com.juzi.flymsg.mapper.UserInfoMapper;
 import com.juzi.flymsg.mapper.UserLoginInfoMapper;
-import com.juzi.flymsg.model.dto.UserRegistryRequest;
-import com.juzi.flymsg.model.dto.UserUpdateRequest;
+import com.juzi.flymsg.model.dto.user.UserRegistryRequest;
+import com.juzi.flymsg.model.dto.user.UserUpdateRequest;
 import com.juzi.flymsg.model.entity.UserInfo;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.model.vo.UserVO;
 import com.juzi.flymsg.service.UserInfoService;
+import com.juzi.flymsg.utils.ThrowUtil;
 import com.juzi.flymsg.utils.ValidCheckUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -56,9 +57,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
 //        g. 账号不能重复 => 查数据库
         // select id, userAccount, userPassword from userLoginInfo where userAccount = 'user1';
         UserLoginInfo userLoginInfo = userLoginInfoMapper.isExist(userAccount);
-        if (userLoginInfo != null) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR, "账号已经存在");
-        }
+        ThrowUtil.throwIf(userLoginInfo != null, ErrorCode.PARAM_ERROR, "账号已经存在");
 
         //2、加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes(StandardCharsets.UTF_8));
@@ -82,17 +81,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
     @Transactional(rollbackFor = BusinessException.class)
     public boolean userDelete(Long userId, HttpServletRequest request) {
         // 1、校验
-        if (userId == null || userId <= 0) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
+        ThrowUtil.throwIf(userId == null || userId <= 0, ErrorCode.PARAM_ERROR);
         // 2、获取当前登录用户，并判断是否是管理员
-        UserInfoVO loginUserVO = userManager.getCurrentUser(request);
-        Long loginUserId = loginUserVO.getUserId();
-        UserInfo loginUser = this.getById(loginUserId);
-        Integer userRole = loginUser.getUserRole();
-        if (userRole == null || userRole != 1) {
-            throw new BusinessException(ErrorCode.NO_AUTH);
-        }
+        boolean isAdmin = userManager.isAdmin(request);
+        ThrowUtil.throwIf(!isAdmin, ErrorCode.NO_AUTH);
         // 3、删除登录信息
         userLoginInfoMapper.deleteById(userId);
         // 删除用户信息
@@ -103,9 +95,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
     @Transactional(rollbackFor = BusinessException.class)
     public boolean userUpdate(UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
         // 1、校验
-        if (userUpdateRequest == null) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
+        ThrowUtil.throwIf(userUpdateRequest == null, ErrorCode.PARAM_ERROR);
         // 2、获取当前登录用户，判断是否是管理员
         UserInfoVO loginUserInfoVO = userManager.getCurrentUser(request);
         Long loginUserId = loginUserInfoVO.getUserId();
@@ -116,9 +106,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         Long userId = userUpdateRequest.getId();
         boolean isMe = loginUserId.equals(userId);
         boolean isAdmin = userRole != null && userRole == 1;
-        if (!isAdmin && !isMe) {
-            throw new BusinessException(ErrorCode.NO_AUTH);
-        }
+        ThrowUtil.throwIf(!isAdmin && !isMe, ErrorCode.NO_AUTH);
         // 是本人 || 是管理员
         String userPassword = userUpdateRequest.getUserPassword();
         String userName = userUpdateRequest.getUserName();
@@ -132,24 +120,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
             // 修改userLoginInfo中的密码
             userLoginInfoMapper.updateUserPasswordBoolean(userId, encryptPassword);
         }
-        if (StringUtils.isNotBlank(userAvatar)) {
-            updateWrapper.set(UserInfo::getUserAvatar, userAvatar);
-        }
-        if (StringUtils.isNotBlank(userName)) {
-            updateWrapper.set(UserInfo::getUserName, userName);
-        }
-        if (StringUtils.isNotBlank(userProfile)) {
-            updateWrapper.set(UserInfo::getUserProfile, userProfile);
-        }
+        updateWrapper.set(StringUtils.isNotBlank(userAvatar), UserInfo::getUserAvatar, userAvatar);
+        updateWrapper.set(StringUtils.isNotBlank(userName), UserInfo::getUserName, userName);
+        updateWrapper.set(StringUtils.isNotBlank(userProfile), UserInfo::getUserProfile, userProfile);
+
         // 修改userInfo中的用户信息
         return this.update(updateWrapper);
     }
 
     @Override
     public UserVO userSelectById(Long userId) {
-        if(userId == null || userId <= 0) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
+        ThrowUtil.throwIf(userId == null || userId <= 0, ErrorCode.PARAM_ERROR);
         UserInfo userInfo = this.getById(userId);
         // 脱敏
         UserVO userVO = new UserVO();
@@ -161,10 +142,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
     public List<UserVO> userListAll(HttpServletRequest request) {
         // 1、获取当前登录用户
         boolean isAdmin = userManager.isAdmin(request);
-
-        if (!isAdmin) {
-            throw new BusinessException(ErrorCode.NO_AUTH);
-        }
+        ThrowUtil.throwIf(!isAdmin, ErrorCode.NO_AUTH);
         // 2、查询所有用户
         List<UserInfo> userInfoList = this.list();
         // Java8新特性 stream流
@@ -177,14 +155,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
 
     @Override
     public List<UserVO> userSelectByName(String searchText, HttpServletRequest request) {
-        if (StringUtils.isBlank(searchText)) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
+        ThrowUtil.throwIf(StringUtils.isBlank(searchText), ErrorCode.PARAM_ERROR);
         // 获取当前登录用户
         UserInfoVO currentUser = userManager.getCurrentUser(request);
-        if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NO_LOGIN, "需要登录后才能查询");
-        }
+        ThrowUtil.throwIf(currentUser == null, ErrorCode.NO_LOGIN, "需要登录后才能查询");
         // select * from userInfo where userName like '%管理%';
         LambdaQueryWrapper<UserInfo> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(UserInfo::getUserName, searchText);

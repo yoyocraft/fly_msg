@@ -1,6 +1,6 @@
 package com.juzi.flymsg.service.impl;
 
-import com.juzi.flymsg.model.dto.UserRegistryRequest;
+import com.juzi.flymsg.model.dto.user.UserRegistryRequest;
 import com.juzi.flymsg.service.UserInfoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

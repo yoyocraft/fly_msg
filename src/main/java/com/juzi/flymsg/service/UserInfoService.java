@@ -1,8 +1,7 @@
 package com.juzi.flymsg.service;
 
-import com.juzi.flymsg.model.dto.UserRegistryRequest;
-import com.juzi.flymsg.model.dto.UserSelectRequest;
-import com.juzi.flymsg.model.dto.UserUpdateRequest;
+import com.juzi.flymsg.model.dto.user.UserRegistryRequest;
+import com.juzi.flymsg.model.dto.user.UserUpdateRequest;
 import com.juzi.flymsg.model.entity.UserInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.juzi.flymsg.model.vo.UserVO;

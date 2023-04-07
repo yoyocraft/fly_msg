@@ -4,6 +4,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
+ * 启动类
+ *
  * @author codejuzi
  * @CreateTime 2023/4/2
  */

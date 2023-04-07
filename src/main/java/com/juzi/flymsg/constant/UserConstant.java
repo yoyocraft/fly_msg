@@ -37,10 +37,5 @@ public interface UserConstant {
      */
     int ADMIN_ROLE = 1;
 
-    /**
-     * 普通人员
-     */
-    int DEFAULT_ROLE = 0;
-
     // endregion
 }

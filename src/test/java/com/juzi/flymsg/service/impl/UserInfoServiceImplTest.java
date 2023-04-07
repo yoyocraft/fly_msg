@@ -2,7 +2,7 @@ package com.juzi.flymsg.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.juzi.flymsg.model.entity.UserInfo;
-import com.juzi.flymsg.model.dto.UserRegistryRequest;
+import com.juzi.flymsg.model.dto.user.UserRegistryRequest;
 import com.juzi.flymsg.model.vo.UserVO;
 import com.juzi.flymsg.service.UserInfoService;
 import org.junit.jupiter.api.Test;
@@ -10,8 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author WS
@@ -30,8 +28,9 @@ class UserInfoServiceImplTest {
         List<UserInfo> userInfoList = userInfoService.list(queryWrapper);
         System.out.println(userInfoList);
     }
+
     @Test
-    void userRegistry () {
+    void userRegistry() {
         UserRegistryRequest userRegistryRequest = new UserRegistryRequest();
         userRegistryRequest.setUserAccount("ws2");
         userRegistryRequest.setUserPassword("12345678");
@@ -42,9 +41,10 @@ class UserInfoServiceImplTest {
     }
 
     @Test
-    void userSelectById () {
+    void userSelectById() {
         long userId = 1;
         UserVO userVO = userInfoService.userSelectById(userId);
         assert userVO != null;
         System.out.println("userVO = " + userVO);
     }
+}

@@ -1,4 +1,4 @@
-package com.juzi.flymsg.model.dto;
+package com.juzi.flymsg.model.dto.user;
 
 import lombok.Data;
 

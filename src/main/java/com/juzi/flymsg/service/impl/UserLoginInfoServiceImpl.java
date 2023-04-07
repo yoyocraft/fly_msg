@@ -5,12 +5,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.juzi.flymsg.common.ErrorCode;
 import com.juzi.flymsg.exception.BusinessException;
 import com.juzi.flymsg.mapper.UserLoginInfoMapper;
-import com.juzi.flymsg.model.dto.UserLoginRequest;
+import com.juzi.flymsg.model.dto.user.UserLoginRequest;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
-import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.service.UserLoginInfoService;
 import com.juzi.flymsg.utils.ValidCheckUtil;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 

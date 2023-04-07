@@ -2,17 +2,16 @@ package com.juzi.flymsg.controller;
 
 import com.juzi.flymsg.common.BaseResponse;
 import com.juzi.flymsg.common.ErrorCode;
-import com.juzi.flymsg.exception.BusinessException;
 import com.juzi.flymsg.manager.UserManager;
-import com.juzi.flymsg.model.dto.UserLoginRequest;
-import com.juzi.flymsg.model.dto.UserRegistryRequest;
-import com.juzi.flymsg.model.dto.UserSelectRequest;
-import com.juzi.flymsg.model.dto.UserUpdateRequest;
+import com.juzi.flymsg.model.dto.user.UserLoginRequest;
+import com.juzi.flymsg.model.dto.user.UserRegistryRequest;
+import com.juzi.flymsg.model.dto.user.UserUpdateRequest;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.model.vo.UserVO;
 import com.juzi.flymsg.service.UserInfoService;
 import com.juzi.flymsg.service.UserLoginInfoService;
 import com.juzi.flymsg.utils.ResultUtil;
+import com.juzi.flymsg.utils.ThrowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +27,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/user")
-public class UserInfoController {
+public class UserController {
 
     @Resource
     private UserManager userManager;
@@ -48,9 +47,7 @@ public class UserInfoController {
         String checkedPassword = userRegistryRequest.getCheckedPassword();
 
         // 简单校验
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkedPassword)) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
+        ThrowUtil.throwIf(StringUtils.isAnyBlank(userAccount, userPassword, checkedPassword), ErrorCode.PARAM_ERROR);
 
         Long userId = userInfoService.userRegistry(userRegistryRequest);
         return ResultUtil.success(userId);
@@ -62,9 +59,7 @@ public class UserInfoController {
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         // 简单校验
-        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
+        ThrowUtil.throwIf(StringUtils.isAnyBlank(userAccount, userPassword), ErrorCode.PARAM_ERROR);
         Long userId = userLoginInfoService.userLogin(userLoginRequest, request);
         return ResultUtil.success(userId);
     }
@@ -81,30 +76,24 @@ public class UserInfoController {
         return ResultUtil.success(flag);
     }
 
-    @DeleteMapping("/delete")
-    public BaseResponse<Boolean> userDelete(Long userId, HttpServletRequest request) {
+    @DeleteMapping("/delete/{id}")
+    public BaseResponse<Boolean> userDelete(@PathVariable(value = "id") Long userId, HttpServletRequest request) {
         // 做一些简单校验
-        if(userId == null || userId <= 0) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
+        ThrowUtil.throwIf(userId == null || userId <= 0, ErrorCode.PARAM_ERROR);
         boolean flag = userInfoService.userDelete(userId, request);
         return ResultUtil.success(flag);
     }
 
     @PutMapping("/update")
     public BaseResponse<Boolean> userUpdate(@RequestBody UserUpdateRequest userUpdateRequest, HttpServletRequest request) {
-        if(userUpdateRequest == null) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
+        ThrowUtil.throwIf(userUpdateRequest == null, ErrorCode.PARAM_ERROR);
         boolean flag = userInfoService.userUpdate(userUpdateRequest, request);
         return ResultUtil.success(flag);
     }
 
     @GetMapping("/select/{id}")
     public BaseResponse<UserVO> userSelectById(@PathVariable(value = "id") Long userId) {
-        if(userId == null || userId <= 0) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
+        ThrowUtil.throwIf(userId == null || userId <= 0, ErrorCode.PARAM_ERROR);
         UserVO userVO = userInfoService.userSelectById(userId);
         return ResultUtil.success(userVO);
     }
@@ -117,9 +106,7 @@ public class UserInfoController {
 
     @GetMapping("/select/name")
     public BaseResponse<List<UserVO>> userSelectByName(String searchText, HttpServletRequest request) {
-        if(StringUtils.isBlank(searchText)) {
-            throw new BusinessException(ErrorCode.PARAM_ERROR);
-        }
+        ThrowUtil.throwIf(StringUtils.isBlank(searchText), ErrorCode.PARAM_ERROR);
         List<UserVO> userVOList = userInfoService.userSelectByName(searchText, request);
         return ResultUtil.success(userVOList);
     }

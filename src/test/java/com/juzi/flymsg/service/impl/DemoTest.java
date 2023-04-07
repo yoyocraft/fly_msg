@@ -1,11 +1,13 @@
 package com.juzi.flymsg.service.impl;
 
 import cn.hutool.json.JSONUtil;
-import com.juzi.flymsg.model.dto.UserRegistryRequest;
+import com.juzi.flymsg.model.dto.user.UserRegistryRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.DigestUtils;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author codejuzi
@@ -33,5 +35,12 @@ public class DemoTest {
                 "}";
         UserRegistryRequest userRegistryRequest = JSONUtil.toBean(json, UserRegistryRequest.class);
         System.out.println("userRegistryRequest = " + userRegistryRequest);
+    }
+
+    @Test
+    public void testListJson() {
+        List<String> tagList = Arrays.asList("Java", "Python");
+        String jsonStr = JSONUtil.toJsonStr(tagList);
+        System.out.println("jsonStr = " + jsonStr);
     }
 }
