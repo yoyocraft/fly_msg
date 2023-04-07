@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author codejuzi
@@ -100,11 +101,26 @@ public class UserInfoController {
     }
 
     @GetMapping("/select/{id}")
-    public BaseResponse<UserVO> userSelectOne(@PathVariable(value = "id") Long userId) {
+    public BaseResponse<UserVO> userSelectById(@PathVariable(value = "id") Long userId) {
         if(userId == null || userId <= 0) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
         UserVO userVO = userInfoService.userSelectOne(userId);
         return ResultUtil.success(userVO);
+    }
+
+    @GetMapping("/list")
+    public BaseResponse<List<UserVO>> userListAll(HttpServletRequest request) {
+        List<UserVO> userVOList = userInfoService.userListAll(request);
+        return ResultUtil.success(userVOList);
+    }
+
+    @GetMapping("/select/name")
+    public BaseResponse<List<UserVO>> userSelectByName(String searchText, HttpServletRequest request) {
+        if(StringUtils.isBlank(searchText)) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        List<UserVO> userVOList = userInfoService.userSelectByName(searchText, request);
+        return ResultUtil.success(userVOList);
     }
 }

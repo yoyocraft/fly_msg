@@ -9,7 +9,6 @@ import com.juzi.flymsg.manager.UserManager;
 import com.juzi.flymsg.mapper.UserInfoMapper;
 import com.juzi.flymsg.mapper.UserLoginInfoMapper;
 import com.juzi.flymsg.model.dto.UserRegistryRequest;
-import com.juzi.flymsg.model.dto.UserSelectRequest;
 import com.juzi.flymsg.model.dto.UserUpdateRequest;
 import com.juzi.flymsg.model.entity.UserInfo;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
@@ -26,6 +25,8 @@ import org.springframework.util.DigestUtils;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.juzi.flymsg.constant.UserConstant.SALT;
 
@@ -85,11 +86,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
         // 2、获取当前登录用户，并判断是否是管理员
-        UserInfoVO loginUserVO = userManager.getCurrentUser(request);
-        Long loginUserId = loginUserVO.getUserId();
-        UserInfo loginUser = this.getById(loginUserId);
-        Integer userRole = loginUser.getUserRole();
-        if (userRole == null || userRole != 1) {
+        boolean isAdmin = userManager.isAdmin(request);
+        // 不是管理员
+        if (!isAdmin) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
         // 3、删除登录信息
@@ -108,13 +107,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         // 2、获取当前登录用户，判断是否是管理员
         UserInfoVO loginUserInfoVO = userManager.getCurrentUser(request);
         Long loginUserId = loginUserInfoVO.getUserId();
-        UserInfo loginUser = this.getById(loginUserId);
-        Integer userRole = loginUser.getUserRole();
 
         // 判断是否是本人 || 是否是管理员
         Long userId = userUpdateRequest.getId();
         boolean isMe = loginUserId.equals(userId);
-        boolean isAdmin = userRole != null && userRole == 1;
+        boolean isAdmin = userManager.isAdmin(request);
         if (!isAdmin && !isMe) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
@@ -146,7 +143,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
 
     @Override
     public UserVO userSelectOne(Long userId) {
-        if(userId == null || userId <= 0) {
+        if (userId == null || userId <= 0) {
             throw new BusinessException(ErrorCode.PARAM_ERROR);
         }
         UserInfo userInfo = this.getById(userId);
@@ -154,6 +151,46 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(userInfo, userVO);
         return userVO;
+    }
+
+    @Override
+    public List<UserVO> userListAll(HttpServletRequest request) {
+        // 1、获取当前登录用户
+        boolean isAdmin = userManager.isAdmin(request);
+
+        if (!isAdmin) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        // 2、查询所有用户
+        List<UserInfo> userInfoList = this.list();
+        // Java8新特性 stream流
+        return userInfoList.stream().map(userInfo -> {
+            UserVO userVO = new UserVO();
+            BeanUtils.copyProperties(userInfo, userVO);
+            return userVO;
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserVO> userSelectByName(String searchText, HttpServletRequest request) {
+        if (StringUtils.isBlank(searchText)) {
+            throw new BusinessException(ErrorCode.PARAM_ERROR);
+        }
+        // 获取当前登录用户
+        UserInfoVO currentUser = userManager.getCurrentUser(request);
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NO_LOGIN, "需要登录后才能查询");
+        }
+        // select * from userInfo where userName like '%管理%';
+        LambdaQueryWrapper<UserInfo> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.like(UserInfo::getUserName, searchText);
+        List<UserInfo> userInfoList = this.list(queryWrapper);
+
+        return userInfoList.stream().map(userInfo -> {
+            UserVO userVO = new UserVO();
+            BeanUtils.copyProperties(userInfo, userVO);
+            return userVO;
+        }).collect(Collectors.toList());
     }
 }
 

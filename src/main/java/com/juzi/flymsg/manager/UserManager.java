@@ -2,13 +2,17 @@ package com.juzi.flymsg.manager;
 
 import com.juzi.flymsg.common.ErrorCode;
 import com.juzi.flymsg.exception.BusinessException;
+import com.juzi.flymsg.mapper.UserInfoMapper;
+import com.juzi.flymsg.model.entity.UserInfo;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import static com.juzi.flymsg.constant.UserConstant.ADMIN_ROLE;
 import static com.juzi.flymsg.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -19,6 +23,10 @@ import static com.juzi.flymsg.constant.UserConstant.USER_LOGIN_STATE;
  */
 @Component
 public class UserManager {
+
+    @Resource
+    private UserInfoMapper userInfoMapper;
+
     /**
      * 获取当前登录用户
      *
@@ -33,5 +41,18 @@ public class UserManager {
         UserInfoVO userInfoVO = new UserInfoVO();
         BeanUtils.copyProperties(userLoginInfo, userInfoVO);
         return userInfoVO;
+    }
+
+    /**
+     * 判断当前登录用户是否是管理员
+     * @param request request 域对象
+     * @return true - 是管理员
+     */
+    public boolean isAdmin(HttpServletRequest request) {
+        UserInfoVO loginUserInfoVO = this.getCurrentUser(request);
+        Long loginUserId = loginUserInfoVO.getUserId();
+        UserInfo loginUser = userInfoMapper.selectById(loginUserId);
+        Integer userRole = loginUser.getUserRole();
+        return userRole != null && userRole == ADMIN_ROLE;
     }
 }

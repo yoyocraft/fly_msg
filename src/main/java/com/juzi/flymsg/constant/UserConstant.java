@@ -29,4 +29,18 @@ public interface UserConstant {
      */
     int USER_PASSWORD_MIN_LEN = 6;
     // endregion
+
+    // region auth
+
+    /**
+     * 管理员
+     */
+    int ADMIN_ROLE = 1;
+
+    /**
+     * 普通人员
+     */
+    int DEFAULT_ROLE = 0;
+
+    // endregion
 }
