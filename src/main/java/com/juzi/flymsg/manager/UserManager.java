@@ -45,6 +45,7 @@ public class UserManager {
 
     /**
      * 判断当前登录用户是否是管理员
+     *
      * @param request request 域对象
      * @return true - 是管理员
      */

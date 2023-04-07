@@ -49,5 +49,22 @@ public interface UserInfoService extends IService<UserInfo> {
      * @param userId 用户id
      * @return userVO
      */
-    UserVO userSelectOne(Long userId);
+    UserVO userSelectById(Long userId);
+
+    /**
+     * 查询所有用户信息（脱敏）
+     *
+     * @param request request 域对象
+     * @return 用户列表
+     */
+    List<UserVO> userListAll(HttpServletRequest request);
+
+    /**
+     * 根据UserName模糊查询
+     *
+     * @param searchText 搜索关键词
+     * @param request request域对象
+     * @return 用户列表
+     */
+    List<UserVO> userSelectByName(String searchText, HttpServletRequest request);
 }
