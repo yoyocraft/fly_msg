@@ -3,7 +3,7 @@ package com.juzi.flymsg.controller;
 import com.juzi.flymsg.common.BaseResponse;
 import com.juzi.flymsg.common.ErrorCode;
 import com.juzi.flymsg.manager.UserManager;
-import com.juzi.flymsg.model.dto.pagethumb.PostThumbAddRequest;
+import com.juzi.flymsg.model.dto.postthumb.PostThumbAddRequest;
 import com.juzi.flymsg.model.vo.PostVO;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.service.PostThumbService;

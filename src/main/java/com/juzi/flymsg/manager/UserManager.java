@@ -6,6 +6,7 @@ import com.juzi.flymsg.model.entity.UserInfo;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
 import com.juzi.flymsg.model.enums.UserRoleEnum;
 import com.juzi.flymsg.model.vo.UserInfoVO;
+import com.juzi.flymsg.model.vo.UserVO;
 import com.juzi.flymsg.utils.ThrowUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -83,5 +84,32 @@ public class UserManager {
         Long loginUserId = loginUserInfoVO.getUserId();
         UserInfo loginUser = userInfoMapper.selectById(loginUserId);
         return UserRoleEnum.getEnumByValue(loginUser.getUserRole());
+    }
+
+    /**
+     * 获取脱敏的用户信息
+     *
+     * @param userInfo user information
+     * @return UserVO
+     */
+    public UserVO getUserVO(UserInfo userInfo) {
+        if (userInfo == null) {
+            return null;
+        }
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(userInfo, userVO);
+        return userVO;
+    }
+
+    /**
+     * 获取脱敏的用户信息
+     *
+     * @param userInfoVO user VO information
+     * @return UserVO
+     */
+    public UserVO getUserVO(UserInfoVO userInfoVO) {
+        Long userId = userInfoVO.getUserId();
+        UserInfo userInfo = userInfoMapper.selectById(userId);
+        return this.getUserVO(userInfo);
     }
 }

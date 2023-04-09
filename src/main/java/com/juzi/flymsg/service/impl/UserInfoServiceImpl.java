@@ -54,15 +54,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         String checkedPassword = userRegistryRequest.getCheckedPassword();
         // 1、校验
         ValidCheckUtil.registryCheck(userAccount, userPassword, checkedPassword);
-//        g. 账号不能重复 => 查数据库
-        // select id, userAccount, userPassword from userLoginInfo where userAccount = 'user1';
-        UserLoginInfo userLoginInfo = userLoginInfoMapper.isExist(userAccount);
-        ThrowUtil.throwIf(userLoginInfo != null, ErrorCode.PARAM_ERROR, "账号已经存在");
-
-        //2、加密
-        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes(StandardCharsets.UTF_8));
         // 每个账号只能注册一次
         synchronized (userAccount.intern()) {
+            // g. 账号不能重复 => 查数据库
+            // select id, userAccount, userPassword from userLoginInfo where userAccount = 'user1';
+            UserLoginInfo userLoginInfo = userLoginInfoMapper.isExist(userAccount);
+            ThrowUtil.throwIf(userLoginInfo != null, ErrorCode.PARAM_ERROR, "账号已经存在");
+
+            //2、加密
+            String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes(StandardCharsets.UTF_8));
+
+
             // 3、插入数据库
             UserInfo userInfo = new UserInfo();
             userInfo.setUserAccount(userAccount);
@@ -103,31 +105,33 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         Long loginUserId = loginUserInfoVO.getUserId();
         UserInfo loginUser = this.getById(loginUserId);
         Integer userRole = loginUser.getUserRole();
+        // 单个用户的串行修改
+        synchronized (String.valueOf(loginUserId).intern()) {
+            // 判断是否是本人 || 是否是管理员
+            Long userId = userUpdateRequest.getId();
+            boolean isMe = loginUserId.equals(userId);
+            boolean isAdmin = userRole != null && userRole == 1;
+            ThrowUtil.throwIf(!isAdmin && !isMe, ErrorCode.NO_AUTH);
+            // 是本人 || 是管理员
+            String userPassword = userUpdateRequest.getUserPassword();
+            String userName = userUpdateRequest.getUserName();
+            String userAvatar = userUpdateRequest.getUserAvatar();
+            String userProfile = userUpdateRequest.getUserProfile();
+            LambdaUpdateWrapper<UserInfo> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(UserInfo::getId, userId);
+            if (StringUtils.isNotBlank(userPassword)) {
+                String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes(StandardCharsets.UTF_8));
+                updateWrapper.set(UserInfo::getUserPassword, encryptPassword);
+                // 修改userLoginInfo中的密码
+                userLoginInfoMapper.updateUserPasswordBoolean(userId, encryptPassword);
+            }
+            updateWrapper.set(StringUtils.isNotBlank(userAvatar), UserInfo::getUserAvatar, userAvatar);
+            updateWrapper.set(StringUtils.isNotBlank(userName), UserInfo::getUserName, userName);
+            updateWrapper.set(StringUtils.isNotBlank(userProfile), UserInfo::getUserProfile, userProfile);
 
-        // 判断是否是本人 || 是否是管理员
-        Long userId = userUpdateRequest.getId();
-        boolean isMe = loginUserId.equals(userId);
-        boolean isAdmin = userRole != null && userRole == 1;
-        ThrowUtil.throwIf(!isAdmin && !isMe, ErrorCode.NO_AUTH);
-        // 是本人 || 是管理员
-        String userPassword = userUpdateRequest.getUserPassword();
-        String userName = userUpdateRequest.getUserName();
-        String userAvatar = userUpdateRequest.getUserAvatar();
-        String userProfile = userUpdateRequest.getUserProfile();
-        LambdaUpdateWrapper<UserInfo> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(UserInfo::getId, userId);
-        if (StringUtils.isNotBlank(userPassword)) {
-            String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes(StandardCharsets.UTF_8));
-            updateWrapper.set(UserInfo::getUserPassword, encryptPassword);
-            // 修改userLoginInfo中的密码
-            userLoginInfoMapper.updateUserPasswordBoolean(userId, encryptPassword);
+            // 修改userInfo中的用户信息
+            return this.update(updateWrapper);
         }
-        updateWrapper.set(StringUtils.isNotBlank(userAvatar), UserInfo::getUserAvatar, userAvatar);
-        updateWrapper.set(StringUtils.isNotBlank(userName), UserInfo::getUserName, userName);
-        updateWrapper.set(StringUtils.isNotBlank(userProfile), UserInfo::getUserProfile, userProfile);
-
-        // 修改userInfo中的用户信息
-        return this.update(updateWrapper);
     }
 
     @Override
@@ -171,23 +175,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
             BeanUtils.copyProperties(userInfo, userVO);
             return userVO;
         }).collect(Collectors.toList());
-    }
-
-    @Override
-    public UserVO getUserVO(UserInfo userInfo) {
-        if (userInfo == null) {
-            return null;
-        }
-        UserVO userVO = new UserVO();
-        BeanUtils.copyProperties(userInfo, userVO);
-        return userVO;
-    }
-
-    @Override
-    public UserVO getUserVO(UserInfoVO userInfoVO) {
-        Long userId = userInfoVO.getUserId();
-        UserInfo userInfo = this.getById(userId);
-        return this.getUserVO(userInfo);
     }
 }
 

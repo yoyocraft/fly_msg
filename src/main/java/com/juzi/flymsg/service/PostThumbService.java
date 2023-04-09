@@ -1,9 +1,8 @@
 package com.juzi.flymsg.service;
 
-import com.juzi.flymsg.model.dto.pagethumb.PostThumbAddRequest;
+import com.juzi.flymsg.model.dto.postthumb.PostThumbAddRequest;
 import com.juzi.flymsg.model.entity.PostThumb;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.juzi.flymsg.model.entity.UserLoginInfo;
 import com.juzi.flymsg.model.vo.PostVO;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 

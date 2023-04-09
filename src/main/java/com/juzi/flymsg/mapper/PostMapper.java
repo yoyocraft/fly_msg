@@ -34,15 +34,15 @@ public interface PostMapper extends BaseMapper<Post> {
     /**
      * 根据内容和标签模糊查询
      *
-     * @param content 内容
-     * @param tags    标签
-     * @param offset 偏移值
-     * @param pageSize 每页显示条数
+     * @param content   内容
+     * @param tags      标签
+     * @param offset    偏移值
+     * @param pageSize  每页显示条数
      * @param sortField 排序字段
-     * @param isASC  是否是升序
+     * @param isASC     是否是升序
      * @return 帖子列表
      */
-    List<Post> postListByContentAndTags(String content, String tags,long offset, long pageSize, String sortField, boolean isASC);
+    List<Post> postListWithContentAndTagsByPage(String content, String tags, long offset, long pageSize, String sortField, boolean isASC);
 
     /**
      * 改变帖子收藏数

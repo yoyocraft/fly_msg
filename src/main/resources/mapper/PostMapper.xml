@@ -55,10 +55,10 @@
                createTime,
                updateTime
         from post
-        where idDelete = 0
+        where isDelete = 0
           and id = #{post};
     </select>
-    <select id="postListByTags" resultType="com.juzi.flymsg.model.entity.Post">
+    <select id="postListByTags" resultType="Post">
         SELECT id, title, content, tags, thumbNum, favourNum, userId, createTime, updateTime
         FROM post
         WHERE isDelete = 0
@@ -67,7 +67,7 @@
         </if>
     </select>
 
-    <select id="postListByContentAndTags" resultType="com.juzi.flymsg.model.entity.Post">
+    <select id="postListWithContentAndTagsByPage" resultType="Post">
         SELECT id, title, content, tags, thumbNum, favourNum, userId, createTime, updateTime
         FROM post
         WHERE isDelete = 0

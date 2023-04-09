@@ -16,8 +16,6 @@ import com.juzi.flymsg.model.vo.PostVO;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.model.vo.UserVO;
 import com.juzi.flymsg.service.PostFavourService;
-import com.juzi.flymsg.service.PostService;
-import com.juzi.flymsg.service.UserInfoService;
 import com.juzi.flymsg.utils.ThrowUtil;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
@@ -36,12 +34,6 @@ import java.util.stream.Collectors;
 @Service
 public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFavour>
         implements PostFavourService {
-
-    @Resource
-    private UserInfoService userInfoService;
-
-    @Resource
-    private PostService postService;
 
     @Resource
     private UserManager userManager;
@@ -99,7 +91,7 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
     public List<PostVO> listMyFavourPost(HttpServletRequest request) {
         // 获取当前登录用户
         UserInfoVO loginUser = userManager.getLoginUser(request);
-        UserVO userVO = userInfoService.getUserVO(loginUser);
+        UserVO userVO = userManager.getUserVO(loginUser);
         Long userId = loginUser.getUserId();
         LambdaQueryWrapper<PostFavour> postFavourLambdaQueryWrapper = new LambdaQueryWrapper<>();
         postFavourLambdaQueryWrapper.eq(PostFavour::getUserId, userId);
@@ -115,6 +107,7 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
                     PostVO postVO = PostVO.objToVo(post);
                     postVO.setUser(userVO);
                     postVO.setHasFavour(true);
+                    // 查询是否已点赞
                     int count = postThumbMapper.hasThumbed(postId, userId);
                     postVO.setHasThumb(count > 0);
                     return postVO;

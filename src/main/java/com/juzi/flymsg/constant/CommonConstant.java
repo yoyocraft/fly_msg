@@ -15,6 +15,11 @@ public interface CommonConstant {
     /**
      * 降序
      */
-    String SORT_ORDER_DESC = " descend";
-    
+    String SORT_ORDER_DESC = "descend";
+
+    /**
+     * 默认排序字段
+     */
+    String DEFAULT_SORTED_FIELD = "updateTime";
+
 }

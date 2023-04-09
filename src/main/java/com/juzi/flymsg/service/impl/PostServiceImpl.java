@@ -13,6 +13,7 @@ import com.juzi.flymsg.manager.UserManager;
 import com.juzi.flymsg.mapper.PostFavourMapper;
 import com.juzi.flymsg.mapper.PostMapper;
 import com.juzi.flymsg.mapper.PostThumbMapper;
+import com.juzi.flymsg.mapper.UserInfoMapper;
 import com.juzi.flymsg.model.dto.post.PostAddRequest;
 import com.juzi.flymsg.model.dto.post.PostDeleteRequest;
 import com.juzi.flymsg.model.dto.post.PostQueryRequest;
@@ -25,7 +26,6 @@ import com.juzi.flymsg.model.vo.PostVO;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.model.vo.UserVO;
 import com.juzi.flymsg.service.PostService;
-import com.juzi.flymsg.service.UserInfoService;
 import com.juzi.flymsg.utils.SqlUtils;
 import com.juzi.flymsg.utils.ThrowUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -48,13 +48,13 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         implements PostService {
 
     @Resource
-    private UserInfoService userInfoService;
-
-    @Resource
     private UserManager userManager;
 
     @Resource
     private PostMapper postMapper;
+
+    @Resource
+    private UserInfoMapper userInfoMapper;
 
     @Resource
     private PostThumbMapper postThumbMapper;
@@ -91,22 +91,25 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         ThrowUtil.throwIf(postUpdateRequest == null, ErrorCode.PARAM_ERROR);
         // 获取当前登录用户
         UserInfoVO loginUserInfoVO = userManager.getLoginUser(request);
-        // 判断是否是本人
+        // 单人修改串行执行
         Long loginUserId = loginUserInfoVO.getUserId();
-        Long userId = postUpdateRequest.getUserId();
-        ThrowUtil.throwIf(!loginUserId.equals(userId), ErrorCode.NO_AUTH);
-        // 修改
-        Long id = postUpdateRequest.getId();
-        String title = postUpdateRequest.getTitle();
-        String content = postUpdateRequest.getContent();
-        String tags = postUpdateRequest.getTags();
-        LambdaUpdateWrapper<Post> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(id != null, Post::getId, id);
-        updateWrapper.set(StringUtils.isNotBlank(title), Post::getTitle, title);
-        updateWrapper.set(StringUtils.isNotBlank(content), Post::getContent, content);
-        updateWrapper.set(StringUtils.isNotBlank(tags), Post::getTags, tags);
+        synchronized (String.valueOf(loginUserId).intern()) {
+            // 判断是否是本人
+            Long userId = postUpdateRequest.getUserId();
+            ThrowUtil.throwIf(!loginUserId.equals(userId), ErrorCode.NO_AUTH);
+            // 修改
+            Long id = postUpdateRequest.getId();
+            String title = postUpdateRequest.getTitle();
+            String content = postUpdateRequest.getContent();
+            String tags = postUpdateRequest.getTags();
+            LambdaUpdateWrapper<Post> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(id != null, Post::getId, id);
+            updateWrapper.set(StringUtils.isNotBlank(title), Post::getTitle, title);
+            updateWrapper.set(StringUtils.isNotBlank(content), Post::getContent, content);
+            updateWrapper.set(StringUtils.isNotBlank(tags), Post::getTags, tags);
 
-        return this.update(updateWrapper);
+            return this.update(updateWrapper);
+        }
     }
 
     @Override
@@ -115,15 +118,17 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         // 获取当前登录用户
         UserInfoVO loginUserInfoVO = userManager.getLoginUser(request);
         Long loginUserId = loginUserInfoVO.getUserId();
-        Long userId = postDeleteRequest.getUserId();
-        boolean isAdmin = userManager.isAdmin(request);
-        boolean isMe = loginUserId.equals(userId);
-        // 不是管理员 && 不是本人
-        ThrowUtil.throwIf(!isAdmin && !isMe, ErrorCode.NO_AUTH);
-        // 删除帖子
-        Long postId = postDeleteRequest.getId();
-        ThrowUtil.throwIf(postId == null, ErrorCode.PARAM_ERROR);
-        return this.removeById(postId);
+        synchronized (String.valueOf(loginUserId)) {
+            Long userId = postDeleteRequest.getUserId();
+            boolean isAdmin = userManager.isAdmin(request);
+            boolean isMe = loginUserId.equals(userId);
+            // 不是管理员 && 不是本人
+            ThrowUtil.throwIf(!isAdmin && !isMe, ErrorCode.NO_AUTH);
+            // 删除帖子
+            Long postId = postDeleteRequest.getId();
+            ThrowUtil.throwIf(postId == null, ErrorCode.PARAM_ERROR);
+            return this.removeById(postId);
+        }
     }
 
     @Override
@@ -150,7 +155,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                 sortField);
         Page<Post> postPage = this.page(new Page<>(pageNum, pageSize), queryWrapper);
         List<PostVO> postVOList = postPage.getRecords().stream()
-                .map(post -> this.getPostVO(post, request)).collect(Collectors.toList());
+                .map(post -> this.getPostVO(post, request))
+                .collect(Collectors.toList());
         // 转换成 Page<PostVO>
         Page<PostVO> postVOPage = new Page<>(pageNum, pageSize, postVOList.size());
         postVOPage.setRecords(postVOList);
@@ -188,6 +194,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     @Override
     public Page<PostVO> postListWithContentAndTagsByPage(PostQueryRequest postQueryRequest, HttpServletRequest request) {
         ThrowUtil.throwIf(postQueryRequest == null, ErrorCode.PARAM_ERROR);
+        // 取值
         List<String> tagList = postQueryRequest.getTagList();
         String content = postQueryRequest.getContent();
         int pageNum = postQueryRequest.getPageNum();
@@ -201,12 +208,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         // 校验
         boolean validSortField = SqlUtils.validSortField(sortField);
         if (!validSortField) {
-            sortField = "updateTime";
+            sortField = CommonConstant.DEFAULT_SORTED_FIELD;
         }
         boolean isASC = sortOrder.equals(CommonConstant.SORT_ORDER_ASC);
-        long offset = (long) (pageNum - 1) * pageSize;
         // 查询
-        List<Post> postList = postMapper.postListByContentAndTags(content, tags, offset, pageSize, sortField, isASC);
+        long offset = (long) (pageNum - 1) * pageSize;
+        List<Post> postList = postMapper.postListWithContentAndTagsByPage(content, tags, offset, pageSize, sortField, isASC);
         List<PostVO> postVOList = postList.stream()
                 .map(post -> this.getPostVO(post, request))
                 .collect(Collectors.toList());
@@ -223,9 +230,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         Long userId = post.getUserId();
         UserInfo user = null;
         if (userId != null && userId > 0) {
-            user = userInfoService.getById(userId);
+            user = userInfoMapper.selectById(userId);
         }
-        UserVO userVO = userInfoService.getUserVO(user);
+        UserVO userVO = userManager.getUserVO(user);
         postVO.setUser(userVO);
         // 获取当前登录用户
         UserInfoVO loginUserInfoVO = userManager.getLoginUserPermitNull(request);

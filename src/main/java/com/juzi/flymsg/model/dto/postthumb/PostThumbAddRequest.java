@@ -1,4 +1,4 @@
-package com.juzi.flymsg.model.dto.pagethumb;
+package com.juzi.flymsg.model.dto.postthumb;
 
 import lombok.Data;
 

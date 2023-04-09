@@ -18,11 +18,6 @@ spring:
     url: jdbc:mysql://localhost:3306/fly_msg
     username: root
     password: 12345678
-  # 文件上传
-  servlet:
-    multipart:
-      # 大小限制
-      max-file-size: 10MB
 server:
   address: 0.0.0.0
   port: 8202

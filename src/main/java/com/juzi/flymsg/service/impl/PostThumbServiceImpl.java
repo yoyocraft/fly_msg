@@ -8,14 +8,13 @@ import com.juzi.flymsg.manager.UserManager;
 import com.juzi.flymsg.mapper.PostFavourMapper;
 import com.juzi.flymsg.mapper.PostMapper;
 import com.juzi.flymsg.mapper.PostThumbMapper;
-import com.juzi.flymsg.model.dto.pagethumb.PostThumbAddRequest;
+import com.juzi.flymsg.model.dto.postthumb.PostThumbAddRequest;
 import com.juzi.flymsg.model.entity.Post;
 import com.juzi.flymsg.model.entity.PostThumb;
 import com.juzi.flymsg.model.vo.PostVO;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.model.vo.UserVO;
 import com.juzi.flymsg.service.PostThumbService;
-import com.juzi.flymsg.service.UserInfoService;
 import com.juzi.flymsg.utils.ThrowUtil;
 import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
@@ -33,9 +32,6 @@ import java.util.stream.Collectors;
 @Service
 public class PostThumbServiceImpl extends ServiceImpl<PostThumbMapper, PostThumb>
         implements PostThumbService {
-
-    @Resource
-    private UserInfoService userInfoService;
 
     @Resource
     private PostFavourMapper postFavourMapper;
@@ -88,7 +84,7 @@ public class PostThumbServiceImpl extends ServiceImpl<PostThumbMapper, PostThumb
 
         // 获取当前登录用户
         UserInfoVO loginUser = userManager.getLoginUser(request);
-        UserVO userVO = userInfoService.getUserVO(loginUser);
+        UserVO userVO = userManager.getUserVO(loginUser);
 
         Long userId = loginUser.getUserId();
         LambdaQueryWrapper<PostThumb> postThumbLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -105,6 +101,7 @@ public class PostThumbServiceImpl extends ServiceImpl<PostThumbMapper, PostThumb
                     PostVO postVO = PostVO.objToVo(post);
                     postVO.setUser(userVO);
                     postVO.setHasThumb(true);
+                    // 查询是否已收藏
                     int count = postFavourMapper.hasFavoured(postId, userId);
                     postVO.setHasFavour(count > 0);
                     return postVO;

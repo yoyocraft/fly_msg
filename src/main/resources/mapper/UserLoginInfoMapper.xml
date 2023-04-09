@@ -5,24 +5,29 @@
 <mapper namespace="com.juzi.flymsg.mapper.UserLoginInfoMapper">
 
     <resultMap id="BaseResultMap" type="com.juzi.flymsg.model.entity.UserLoginInfo">
-            <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="userId" column="userId" jdbcType="BIGINT"/>
-            <result property="userAccount" column="userAccount" jdbcType="VARCHAR"/>
-            <result property="userPassword" column="userPassword" jdbcType="VARCHAR"/>
-            <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
-            <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
-            <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="userId" column="userId" jdbcType="BIGINT"/>
+        <result property="userAccount" column="userAccount" jdbcType="VARCHAR"/>
+        <result property="userPassword" column="userPassword" jdbcType="VARCHAR"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+        <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,userId,userAccount,
+        id
+        ,userId,userAccount,
         userPassword,createTime,updateTime,
         isDelete
     </sql>
     <update id="updateUserPasswordBoolean">
-        update  userLoginInfo set userPassword = #{userPassword} where userId = #{userId};
+        update userLoginInfo
+        set userPassword = #{userPassword}
+        where userId = #{userId};
     </update>
     <select id="isExist" resultType="UserLoginInfo">
-        select userId, userAccount, userPassword from userLoginInfo where userAccount = #{userAccount};
+        select userId, userAccount, userPassword
+        from userLoginInfo
+        where userAccount = #{userAccount};
     </select>
 </mapper>
