@@ -52,12 +52,12 @@ public class PostThumbServiceImpl extends ServiceImpl<PostThumbMapper, PostThumb
         Long userId = loginUserInfoVO.getUserId();
         PostThumbService postThumbService = (PostThumbService) AopContext.currentProxy();
         synchronized (String.valueOf(userId).intern()) {
-            return postThumbService.doPostFavourInner(userId, postId);
+            return postThumbService.doPostThumbInner(userId, postId);
         }
     }
 
     @Override
-    public int doPostFavourInner(Long userId, Long postId) {
+    public int doPostThumbInner(Long userId, Long postId) {
         PostThumb postThumb = new PostThumb();
         postThumb.setUserId(userId);
         postThumb.setPostId(postId);
@@ -74,7 +74,7 @@ public class PostThumbServiceImpl extends ServiceImpl<PostThumbMapper, PostThumb
             // 未点赞
             result = this.save(postThumb);
             ThrowUtil.throwIf(!result, ErrorCode.SYSTEM_ERROR);
-            result = postMapper.updatePostThumbs(postId, -1);
+            result = postMapper.updatePostThumbs(postId, 1);
             return result ? 1 : 0;
         }
     }

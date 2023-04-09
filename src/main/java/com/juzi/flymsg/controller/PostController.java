@@ -95,7 +95,6 @@ public class PostController {
 
     @PostMapping("/list/vague")
     public BaseResponse<Page<PostVO>> postListByContentAndTags(@RequestBody PostQueryRequest postQueryRequest, HttpServletRequest request) {
-        log.info("post list by content and tags, {}", postQueryRequest);
         ThrowUtil.throwIf(postQueryRequest == null, ErrorCode.PARAM_ERROR);
         Page<PostVO> postVOList = postService.postListWithContentAndTagsByPage(postQueryRequest, request);
         return ResultUtil.success(postVOList);

@@ -32,7 +32,7 @@ public interface PostThumbService extends IService<PostThumb> {
      * @param postId post id
      * @return 点赞变化数
      */
-    int doPostFavourInner(Long userId, Long postId);
+    int doPostThumbInner(Long userId, Long postId);
 
     /**
      * 查询我点赞的文章

@@ -240,13 +240,13 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             // 获取点赞
             LambdaQueryWrapper<PostThumb> postThumbQueryWrapper = new LambdaQueryWrapper<>();
             postThumbQueryWrapper.eq(PostThumb::getPostId, postId);
-            postThumbQueryWrapper.eq(PostThumb::getUserId, loginUserInfoVO.getId());
+            postThumbQueryWrapper.eq(PostThumb::getUserId, loginUserInfoVO.getUserId());
             PostThumb postThumb = postThumbMapper.selectOne(postThumbQueryWrapper);
             postVO.setHasThumb(postThumb != null);
             // 获取收藏
             LambdaQueryWrapper<PostFavour> postFavourQueryWrapper = new LambdaQueryWrapper<>();
             postFavourQueryWrapper.eq(PostFavour::getPostId, postId);
-            postFavourQueryWrapper.eq(PostFavour::getUserId, loginUserInfoVO.getId());
+            postFavourQueryWrapper.eq(PostFavour::getUserId, loginUserInfoVO.getUserId());
             PostFavour postFavour = postFavourMapper.selectOne(postFavourQueryWrapper);
             postVO.setHasFavour(postFavour != null);
         }

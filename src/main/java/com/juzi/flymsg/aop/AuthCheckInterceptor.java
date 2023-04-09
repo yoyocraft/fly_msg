@@ -4,7 +4,6 @@ import com.juzi.flymsg.annotation.AuthCheck;
 import com.juzi.flymsg.common.ErrorCode;
 import com.juzi.flymsg.manager.UserManager;
 import com.juzi.flymsg.model.enums.UserRoleEnum;
-import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.utils.ThrowUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * 权限校验拦截器
+ *
  * @author codejuzi
  * @CreateTime 2023/4/9
  */
@@ -33,6 +33,7 @@ public class AuthCheckInterceptor {
 
     /**
      * 执行拦截校验
+     *
      * @param joinPoint 切点
      * @param authCheck 注解
      * @return 执行结果

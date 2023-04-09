@@ -55,6 +55,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         // 1、校验
         ValidCheckUtil.registryCheck(userAccount, userPassword, checkedPassword);
         // 每个账号只能注册一次
+        // intern() => 从字符串常量池去取，保证只有一份字符串数据
         synchronized (userAccount.intern()) {
             // g. 账号不能重复 => 查数据库
             // select id, userAccount, userPassword from userLoginInfo where userAccount = 'user1';
