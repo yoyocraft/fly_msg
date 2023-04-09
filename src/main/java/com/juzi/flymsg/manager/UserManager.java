@@ -5,6 +5,7 @@ import com.juzi.flymsg.exception.BusinessException;
 import com.juzi.flymsg.mapper.UserInfoMapper;
 import com.juzi.flymsg.model.entity.UserInfo;
 import com.juzi.flymsg.model.entity.UserLoginInfo;
+import com.juzi.flymsg.model.enums.UserRoleEnum;
 import com.juzi.flymsg.model.vo.UserInfoVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -55,5 +56,18 @@ public class UserManager {
         UserInfo loginUser = userInfoMapper.selectById(loginUserId);
         Integer userRole = loginUser.getUserRole();
         return userRole != null && userRole == ADMIN_ROLE;
+    }
+
+    /**
+     * 获取当前登录用户的角色枚举值
+     *
+     * @param request request 域对象
+     * @return UserRoleEnum
+     */
+    public UserRoleEnum getUserRole(HttpServletRequest request) {
+        UserInfoVO loginUserInfoVO = this.getCurrentUser(request);
+        Long loginUserId = loginUserInfoVO.getUserId();
+        UserInfo loginUser = userInfoMapper.selectById(loginUserId);
+        return UserRoleEnum.getEnumByValue(loginUser.getUserRole());
     }
 }

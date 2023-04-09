@@ -1,7 +1,9 @@
 package com.juzi.flymsg.controller;
 
+import com.juzi.flymsg.annotation.AuthCheck;
 import com.juzi.flymsg.common.BaseResponse;
 import com.juzi.flymsg.common.ErrorCode;
+import com.juzi.flymsg.constant.UserConstant;
 import com.juzi.flymsg.manager.UserManager;
 import com.juzi.flymsg.model.dto.user.UserLoginRequest;
 import com.juzi.flymsg.model.dto.user.UserRegistryRequest;
@@ -40,8 +42,6 @@ public class UserController {
 
     @PostMapping("/registry")
     public BaseResponse<Long> userRegistry(@RequestBody UserRegistryRequest userRegistryRequest) {
-        log.info("userRegistry....");
-
         String userAccount = userRegistryRequest.getUserAccount();
         String userPassword = userRegistryRequest.getUserPassword();
         String checkedPassword = userRegistryRequest.getCheckedPassword();
@@ -55,7 +55,6 @@ public class UserController {
 
     @PostMapping("/login")
     public BaseResponse<Long> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
-        log.info("userLogin....");
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         // 简单校验
@@ -77,6 +76,7 @@ public class UserController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> userDelete(@PathVariable(value = "id") Long userId, HttpServletRequest request) {
         // 做一些简单校验
         ThrowUtil.throwIf(userId == null || userId <= 0, ErrorCode.PARAM_ERROR);

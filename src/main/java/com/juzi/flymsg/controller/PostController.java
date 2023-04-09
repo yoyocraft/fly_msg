@@ -1,7 +1,9 @@
 package com.juzi.flymsg.controller;
 
+import com.juzi.flymsg.annotation.AuthCheck;
 import com.juzi.flymsg.common.BaseResponse;
 import com.juzi.flymsg.common.ErrorCode;
+import com.juzi.flymsg.constant.UserConstant;
 import com.juzi.flymsg.model.dto.post.PostAddRequest;
 import com.juzi.flymsg.model.dto.post.PostDeleteRequest;
 import com.juzi.flymsg.model.dto.post.PostSelectRequest;
@@ -61,6 +63,7 @@ public class PostController {
     }
 
     @GetMapping("/list/all")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<List<Post>> postListAll(HttpServletRequest request) {
         List<Post> postList = postService.postListAll(request);
         return ResultUtil.success(postList);

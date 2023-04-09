@@ -37,5 +37,14 @@ public interface UserConstant {
      */
     int ADMIN_ROLE = 1;
 
+    /**
+     * 默认用户
+     */
+    int DEFAULT_ROLE = 0;
+
+    /**
+     * 封号的用户
+     */
+    int BANNED_ROLE = 2;
     // endregion
 }
