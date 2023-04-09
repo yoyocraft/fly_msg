@@ -1,5 +1,5 @@
 # fly_msg
-一个社交平台，飞信
+一个尚未完工的Project
 
 ## 技术栈
 ### 后端
@@ -12,6 +12,9 @@
 - MyBatisPlus 
 - Knife4j && Swagger 
 - Commons-lang3工具类
+- GSON
+- HuTool
+- jmeter测试
 
 ```markdown
    __ _                             
