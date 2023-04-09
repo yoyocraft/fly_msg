@@ -2,18 +2,31 @@ package com.juzi.flymsg.service.impl;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.juzi.flymsg.common.ErrorCode;
+import com.juzi.flymsg.common.PageRequest;
+import com.juzi.flymsg.constant.CommonConstant;
 import com.juzi.flymsg.manager.UserManager;
+import com.juzi.flymsg.mapper.PostFavourMapper;
 import com.juzi.flymsg.mapper.PostMapper;
+import com.juzi.flymsg.mapper.PostThumbMapper;
 import com.juzi.flymsg.model.dto.post.PostAddRequest;
 import com.juzi.flymsg.model.dto.post.PostDeleteRequest;
-import com.juzi.flymsg.model.dto.post.PostSelectRequest;
+import com.juzi.flymsg.model.dto.post.PostQueryRequest;
 import com.juzi.flymsg.model.dto.post.PostUpdateRequest;
 import com.juzi.flymsg.model.entity.Post;
+import com.juzi.flymsg.model.entity.PostFavour;
+import com.juzi.flymsg.model.entity.PostThumb;
+import com.juzi.flymsg.model.entity.UserInfo;
+import com.juzi.flymsg.model.vo.PostVO;
 import com.juzi.flymsg.model.vo.UserInfoVO;
+import com.juzi.flymsg.model.vo.UserVO;
 import com.juzi.flymsg.service.PostService;
+import com.juzi.flymsg.service.UserInfoService;
+import com.juzi.flymsg.utils.SqlUtils;
 import com.juzi.flymsg.utils.ThrowUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -23,6 +36,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 /**
  * @author codejuzi
@@ -34,16 +48,25 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         implements PostService {
 
     @Resource
+    private UserInfoService userInfoService;
+
+    @Resource
     private UserManager userManager;
 
     @Resource
     private PostMapper postMapper;
 
+    @Resource
+    private PostThumbMapper postThumbMapper;
+
+    @Resource
+    private PostFavourMapper postFavourMapper;
+
     @Override
     public Long postAdd(PostAddRequest postAddRequest, HttpServletRequest request) {
         ThrowUtil.throwIf(postAddRequest == null, ErrorCode.PARAM_ERROR);
         // 获取当前登录用户
-        UserInfoVO loginUserInfoVO = userManager.getCurrentUser(request);
+        UserInfoVO loginUserInfoVO = userManager.getLoginUser(request);
         ThrowUtil.throwIf(loginUserInfoVO == null, ErrorCode.NO_LOGIN);
 
         // 校验
@@ -67,7 +90,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     public boolean postUpdate(PostUpdateRequest postUpdateRequest, HttpServletRequest request) {
         ThrowUtil.throwIf(postUpdateRequest == null, ErrorCode.PARAM_ERROR);
         // 获取当前登录用户
-        UserInfoVO loginUserInfoVO = userManager.getCurrentUser(request);
+        UserInfoVO loginUserInfoVO = userManager.getLoginUser(request);
         // 判断是否是本人
         Long loginUserId = loginUserInfoVO.getUserId();
         Long userId = postUpdateRequest.getUserId();
@@ -90,7 +113,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     public boolean postDelete(PostDeleteRequest postDeleteRequest, HttpServletRequest request) {
         ThrowUtil.throwIf(postDeleteRequest == null, ErrorCode.PARAM_ERROR);
         // 获取当前登录用户
-        UserInfoVO loginUserInfoVO = userManager.getCurrentUser(request);
+        UserInfoVO loginUserInfoVO = userManager.getLoginUser(request);
         Long loginUserId = loginUserInfoVO.getUserId();
         Long userId = postDeleteRequest.getUserId();
         boolean isAdmin = userManager.isAdmin(request);
@@ -104,63 +127,125 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     }
 
     @Override
-    public Post postSelectById(Long postId) {
+    public PostVO postSelectById(Long postId, HttpServletRequest request) {
         ThrowUtil.throwIf(postId == null, ErrorCode.PARAM_ERROR);
-        return postMapper.postSelectById(postId);
+        Post post = postMapper.postSelectById(postId);
+        return this.getPostVO(post, request);
     }
 
     @Override
-    public List<Post> postListAll(HttpServletRequest request) {
+    public Page<PostVO> postListAllByPage(PageRequest pageRequest, HttpServletRequest request) {
+        int pageNum = pageRequest.getPageNum();
+        int pageSize = pageRequest.getPageSize();
+        String sortOrder = pageRequest.getSortOrder();
+        String sortField = pageRequest.getSortField();
+        // 限制爬虫
+        ThrowUtil.throwIf(pageSize > 20, ErrorCode.PARAM_ERROR, "一次请求过多！");
         // 判断是否是管理员
         boolean isAdmin = userManager.isAdmin(request);
         ThrowUtil.throwIf(!isAdmin, ErrorCode.NO_AUTH);
         // 查询
-        return this.list();
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+                sortField);
+        Page<Post> postPage = this.page(new Page<>(pageNum, pageSize), queryWrapper);
+        List<PostVO> postVOList = postPage.getRecords().stream()
+                .map(post -> this.getPostVO(post, request)).collect(Collectors.toList());
+        // 转换成 Page<PostVO>
+        Page<PostVO> postVOPage = new Page<>(pageNum, pageSize, postVOList.size());
+        postVOPage.setRecords(postVOList);
+        return postVOPage;
     }
 
     @Override
-    public List<Post> postListByUserId(Long userId) {
+    public List<PostVO> postListByUserId(Long userId, HttpServletRequest request) {
         ThrowUtil.throwIf(userId == null, ErrorCode.PARAM_ERROR);
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Post::getUserId, userId);
-        return this.list(queryWrapper);
+        List<Post> postList = this.list(queryWrapper);
+        return postList.stream().map(post -> this.getPostVO(post, request)).collect(Collectors.toList());
     }
 
     @Override
-    public List<Post> postListByTitle(String searchText) {
+    public List<PostVO> postListByTitleOrContent(String searchText, HttpServletRequest request) {
         ThrowUtil.throwIf(StringUtils.isBlank(searchText), ErrorCode.PARAM_ERROR);
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.like(Post::getTitle, searchText);
-        return this.list(queryWrapper);
+        queryWrapper.like(Post::getTitle, searchText).or().like(Post::getContent, searchText);
+        List<Post> postList = this.list(queryWrapper);
+        return postList.stream().map(post -> this.getPostVO(post, request)).collect(Collectors.toList());
     }
 
     @Override
-    public List<Post> postListByTags(List<String> tagList) {
+    public List<PostVO> postListByTags(List<String> tagList, HttpServletRequest request) {
         ThrowUtil.throwIf(tagList == null, ErrorCode.PARAM_ERROR);
         String tags = JSONUtil.toJsonStr(tagList);
         tags = tags.toLowerCase(Locale.ROOT);
         // 查询
-        return postMapper.postListByTags(tags);
+        List<Post> postList = postMapper.postListByTags(tags);
+        return postList.stream().map(post -> this.getPostVO(post, request)).collect(Collectors.toList());
     }
 
     @Override
-    public List<Post> postListByContent(String content) {
-        ThrowUtil.throwIf(StringUtils.isBlank(content), ErrorCode.PARAM_ERROR);
-        LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.like(Post::getContent, content);
-        return this.list(queryWrapper);
-    }
-
-    @Override
-    public List<Post> postListByContentAndTags(PostSelectRequest postSelectRequest) {
-        ThrowUtil.throwIf(postSelectRequest == null, ErrorCode.PARAM_ERROR);
-        List<String> tagList = postSelectRequest.getTagList();
-        String content = postSelectRequest.getContent();
+    public Page<PostVO> postListWithContentAndTagsByPage(PostQueryRequest postQueryRequest, HttpServletRequest request) {
+        ThrowUtil.throwIf(postQueryRequest == null, ErrorCode.PARAM_ERROR);
+        List<String> tagList = postQueryRequest.getTagList();
+        String content = postQueryRequest.getContent();
+        int pageNum = postQueryRequest.getPageNum();
+        int pageSize = postQueryRequest.getPageSize();
+        String sortField = postQueryRequest.getSortField();
+        String sortOrder = postQueryRequest.getSortOrder();
         String tags = JSONUtil.toJsonStr(tagList);
         tags = tags.toLowerCase(Locale.ROOT);
+        // 限制爬虫
+        ThrowUtil.throwIf(pageSize > 20, ErrorCode.PARAM_ERROR, "一次请求过多！");
+        // 校验
+        boolean validSortField = SqlUtils.validSortField(sortField);
+        if (!validSortField) {
+            sortField = "updateTime";
+        }
+        boolean isASC = sortOrder.equals(CommonConstant.SORT_ORDER_ASC);
+        long offset = (long) (pageNum - 1) * pageSize;
         // 查询
-        return postMapper.postListByContentAndTags(content, tags);
+        List<Post> postList = postMapper.postListByContentAndTags(content, tags, offset, pageSize, sortField, isASC);
+        List<PostVO> postVOList = postList.stream()
+                .map(post -> this.getPostVO(post, request))
+                .collect(Collectors.toList());
+        Page<PostVO> postVOPage = new Page<>(pageNum, pageSize, postVOList.size());
+        postVOPage.setRecords(postVOList);
+        return postVOPage;
     }
+
+    @Override
+    public PostVO getPostVO(Post post, HttpServletRequest request) {
+        PostVO postVO = PostVO.objToVo(post);
+        long postId = post.getId();
+        // 1. 关联查询用户信息
+        Long userId = post.getUserId();
+        UserInfo user = null;
+        if (userId != null && userId > 0) {
+            user = userInfoService.getById(userId);
+        }
+        UserVO userVO = userInfoService.getUserVO(user);
+        postVO.setUser(userVO);
+        // 获取当前登录用户
+        UserInfoVO loginUserInfoVO = userManager.getLoginUserPermitNull(request);
+        if (loginUserInfoVO != null) {
+            // 获取点赞
+            LambdaQueryWrapper<PostThumb> postThumbQueryWrapper = new LambdaQueryWrapper<>();
+            postThumbQueryWrapper.eq(PostThumb::getPostId, postId);
+            postThumbQueryWrapper.eq(PostThumb::getUserId, loginUserInfoVO.getId());
+            PostThumb postThumb = postThumbMapper.selectOne(postThumbQueryWrapper);
+            postVO.setHasThumb(postThumb != null);
+            // 获取收藏
+            LambdaQueryWrapper<PostFavour> postFavourQueryWrapper = new LambdaQueryWrapper<>();
+            postFavourQueryWrapper.eq(PostFavour::getPostId, postId);
+            postFavourQueryWrapper.eq(PostFavour::getUserId, loginUserInfoVO.getId());
+            PostFavour postFavour = postFavourMapper.selectOne(postFavourQueryWrapper);
+            postVO.setHasFavour(postFavour != null);
+        }
+        return postVO;
+    }
+
 }
 
 

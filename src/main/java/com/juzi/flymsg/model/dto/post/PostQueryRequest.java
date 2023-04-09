@@ -1,6 +1,8 @@
 package com.juzi.flymsg.model.dto.post;
 
+import com.juzi.flymsg.common.PageRequest;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 import java.util.List;
@@ -11,8 +13,9 @@ import java.util.List;
  * @author codejuzi
  * @CreateTime 2023/4/7
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class PostSelectRequest implements Serializable {
+public class PostQueryRequest extends PageRequest implements Serializable {
 
     private static final long serialVersionUID = -7529385723828905523L;
 

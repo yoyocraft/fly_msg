@@ -1,11 +1,14 @@
 package com.juzi.flymsg.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.juzi.flymsg.common.PageRequest;
 import com.juzi.flymsg.model.dto.post.PostAddRequest;
 import com.juzi.flymsg.model.dto.post.PostDeleteRequest;
-import com.juzi.flymsg.model.dto.post.PostSelectRequest;
+import com.juzi.flymsg.model.dto.post.PostQueryRequest;
 import com.juzi.flymsg.model.dto.post.PostUpdateRequest;
 import com.juzi.flymsg.model.entity.Post;
+import com.juzi.flymsg.model.vo.PostVO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -48,56 +51,66 @@ public interface PostService extends IService<Post> {
     /**
      * 根据id查询帖子信息
      *
-     * @param postId 帖子id
-     * @return post
+     * @param postId  帖子id
+     * @param request request 请求域
+     * @return postVO
      */
-    Post postSelectById(Long postId);
+    PostVO postSelectById(Long postId, HttpServletRequest request);
 
     /**
-     * 查询所有帖子
+     * 分页查询所有帖子
      *
-     * @param request request 域对象
+     * @param pageRequest 分页请求参数
+     * @param request     request 域对象
      * @return 帖子列表
      */
-    List<Post> postListAll(HttpServletRequest request);
+    Page<PostVO> postListAllByPage(PageRequest pageRequest, HttpServletRequest request);
 
     /**
      * 获取user的所有文章
      *
-     * @param userId user id
+     * @param userId  user id
+     * @param request request 域对象
      * @return 文章列表
      */
-    List<Post> postListByUserId(Long userId);
+    List<PostVO> postListByUserId(Long userId, HttpServletRequest request);
 
     /**
-     * 根据标题模糊查询帖子信息
+     * 根据标题或者内容模糊查询帖子信息
      *
      * @param searchText 搜索关键词
+     * @param request    request 域对象
      * @return 文章列表
      */
-    List<Post> postListByTitle(String searchText);
+    List<PostVO> postListByTitleOrContent(String searchText, HttpServletRequest request);
 
     /**
      * 根据标签信息模糊查询
      *
      * @param tagList 标签信息
+     * @param request request 域对象
      * @return 文章列表
      */
-    List<Post> postListByTags(List<String> tagList);
+    List<PostVO> postListByTags(List<String> tagList, HttpServletRequest request);
+
 
     /**
-     * 根据内容模糊查询
+     * 根据内容和标签模糊、分页查询
      *
-     * @param content 内容
-     * @return 文章列表
-     */
-    List<Post> postListByContent(String content);
-
-    /**
-     * 根据内容和标签模糊查询
-     *
-     * @param postSelectRequest 帖子查询请求信息
+     * @param postQueryRequest 帖子查询请求信息
+     * @param request          request 域对象
      * @return 帖子列表
      */
-    List<Post> postListByContentAndTags(PostSelectRequest postSelectRequest);
+    Page<PostVO> postListWithContentAndTagsByPage(PostQueryRequest postQueryRequest, HttpServletRequest request);
+
+
+    /**
+     * 封装Post成为PostVO
+     *
+     * @param post    post
+     * @param request request 请求域
+     * @return PostVO
+     */
+    PostVO getPostVO(Post post, HttpServletRequest request);
+
 }

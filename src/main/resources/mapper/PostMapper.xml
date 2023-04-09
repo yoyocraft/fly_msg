@@ -24,6 +24,26 @@
         userId,createTime,updateTime,
         isDelete
     </sql>
+    <update id="updatePostFavours">
+        update post
+        set favourNum = favourNum + (#{num})
+        where
+        <if test="num == -1">
+            favourNum > 0
+            and
+        </if>
+        id = #{postId};
+    </update>
+    <update id="updatePostThumbs">
+        update post
+        set thumbNum = thumbNum + (#{num})
+        where
+        <if test="num == -1">
+            thumbNum > 0
+            and
+        </if>
+        id = #{postId};
+    </update>
     <select id="postSelectById" resultType="Post">
         select id,
                title,
@@ -53,12 +73,17 @@
         WHERE isDelete = 0
         <trim prefix="AND (" suffix=")" suffixOverrides="OR">
             <if test="content != null and content != ''">
-                content like #{content}
+                content like CONCAT('%', #{content}, '%')
                 OR
             </if>
             <if test="tags != null and tags != ''">
                 JSON_CONTAINS(tags, #{tags}, '$')
             </if>
         </trim>
+        order by post.${sortField}
+        <if test="!isASC">
+            DESC
+        </if>
+        limit #{pageSize} OFFSET #{offset}
     </select>
 </mapper>

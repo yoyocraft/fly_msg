@@ -4,6 +4,7 @@ import com.juzi.flymsg.model.dto.user.UserRegistryRequest;
 import com.juzi.flymsg.model.dto.user.UserUpdateRequest;
 import com.juzi.flymsg.model.entity.UserInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.juzi.flymsg.model.vo.UserInfoVO;
 import com.juzi.flymsg.model.vo.UserVO;
 
 import javax.servlet.http.HttpServletRequest;
@@ -66,4 +67,20 @@ public interface UserInfoService extends IService<UserInfo> {
      * @return 用户列表
      */
     List<UserVO> userSelectByName(String searchText, HttpServletRequest request);
+
+    /**
+     * 获取脱敏的用户信息
+     *
+     * @param userInfo user information
+     * @return UserVO
+     */
+    UserVO getUserVO(UserInfo userInfo);
+
+    /**
+     * 获取脱敏的用户信息
+     *
+     * @param userInfoVO user VO information
+     * @return UserVO
+     */
+    UserVO getUserVO(UserInfoVO userInfoVO);
 }

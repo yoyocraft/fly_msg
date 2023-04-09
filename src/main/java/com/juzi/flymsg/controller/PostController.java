@@ -1,14 +1,16 @@
 package com.juzi.flymsg.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.juzi.flymsg.annotation.AuthCheck;
 import com.juzi.flymsg.common.BaseResponse;
 import com.juzi.flymsg.common.ErrorCode;
+import com.juzi.flymsg.common.PageRequest;
 import com.juzi.flymsg.constant.UserConstant;
 import com.juzi.flymsg.model.dto.post.PostAddRequest;
 import com.juzi.flymsg.model.dto.post.PostDeleteRequest;
-import com.juzi.flymsg.model.dto.post.PostSelectRequest;
+import com.juzi.flymsg.model.dto.post.PostQueryRequest;
 import com.juzi.flymsg.model.dto.post.PostUpdateRequest;
-import com.juzi.flymsg.model.entity.Post;
+import com.juzi.flymsg.model.vo.PostVO;
 import com.juzi.flymsg.service.PostService;
 import com.juzi.flymsg.utils.ResultUtil;
 import com.juzi.flymsg.utils.ThrowUtil;
@@ -56,52 +58,46 @@ public class PostController {
     }
 
     @GetMapping("/select/{id}")
-    public BaseResponse<Post> postSelectById(@PathVariable(value = "id") Long postId) {
+    public BaseResponse<PostVO> postSelectById(@PathVariable(value = "id") Long postId, HttpServletRequest request) {
         ThrowUtil.throwIf(postId == null, ErrorCode.PARAM_ERROR);
-        Post post = postService.postSelectById(postId);
-        return ResultUtil.success(post);
+        PostVO postVO = postService.postSelectById(postId, request);
+        return ResultUtil.success(postVO);
     }
 
-    @GetMapping("/list/all")
+    @PostMapping("/list/all")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<List<Post>> postListAll(HttpServletRequest request) {
-        List<Post> postList = postService.postListAll(request);
-        return ResultUtil.success(postList);
+    public BaseResponse<Page<PostVO>> postListAll(@RequestBody PageRequest pageRequest, HttpServletRequest request) {
+        ThrowUtil.throwIf(pageRequest == null, ErrorCode.PARAM_ERROR);
+        Page<PostVO> postVOPage = postService.postListAllByPage(pageRequest, request);
+        return ResultUtil.success(postVOPage);
     }
 
     @GetMapping("/list/{id}")
-    public BaseResponse<List<Post>> postListByUserId(@PathVariable(value = "id") Long userId) {
+    public BaseResponse<List<PostVO>> postListByUserId(@PathVariable(value = "id") Long userId, HttpServletRequest request) {
         ThrowUtil.throwIf(userId == null, ErrorCode.PARAM_ERROR);
-        List<Post> postList = postService.postListByUserId(userId);
-        return ResultUtil.success(postList);
+        List<PostVO> postVOList = postService.postListByUserId(userId, request);
+        return ResultUtil.success(postVOList);
     }
 
-    @GetMapping("/select/title")
-    public BaseResponse<List<Post>> postListByTitle(@RequestParam(value = "title") String searchText) {
+    @GetMapping("/select/vague")
+    public BaseResponse<List<PostVO>> postListByTitleOrContent(@RequestParam(value = "title") String searchText, HttpServletRequest request) {
         ThrowUtil.throwIf(StringUtils.isBlank(searchText), ErrorCode.PARAM_ERROR);
-        List<Post> postList = postService.postListByTitle(searchText);
-        return ResultUtil.success(postList);
+        List<PostVO> postVOList = postService.postListByTitleOrContent(searchText, request);
+        return ResultUtil.success(postVOList);
     }
 
     @GetMapping("/list/tags")
-    public BaseResponse<List<Post>> postListByTags(@RequestParam List<String> tagList) {
+    public BaseResponse<List<PostVO>> postListByTags(@RequestParam List<String> tagList, HttpServletRequest request) {
         ThrowUtil.throwIf(tagList == null, ErrorCode.PARAM_ERROR);
-        List<Post> postList = postService.postListByTags(tagList);
-        return ResultUtil.success(postList);
-    }
-
-    @GetMapping("/list/content")
-    public BaseResponse<List<Post>> postListByContent(@RequestParam(value = "content") String searchText) {
-        ThrowUtil.throwIf(searchText == null, ErrorCode.PARAM_ERROR);
-        List<Post> postList = postService.postListByContent(searchText);
-        return ResultUtil.success(postList);
+        List<PostVO> postVOList = postService.postListByTags(tagList, request);
+        return ResultUtil.success(postVOList);
     }
 
     @PostMapping("/list/vague")
-    public BaseResponse<List<Post>> postListByContentAndTags(@RequestBody PostSelectRequest postSelectRequest) {
-        log.info("post list by content and tags, {}", postSelectRequest);
-        ThrowUtil.throwIf(postSelectRequest == null, ErrorCode.PARAM_ERROR);
-        List<Post> postList = postService.postListByContentAndTags(postSelectRequest);
-        return ResultUtil.success(postList);
+    public BaseResponse<Page<PostVO>> postListByContentAndTags(@RequestBody PostQueryRequest postQueryRequest, HttpServletRequest request) {
+        log.info("post list by content and tags, {}", postQueryRequest);
+        ThrowUtil.throwIf(postQueryRequest == null, ErrorCode.PARAM_ERROR);
+        Page<PostVO> postVOList = postService.postListWithContentAndTagsByPage(postQueryRequest, request);
+        return ResultUtil.success(postVOList);
     }
 }

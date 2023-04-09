@@ -56,6 +56,10 @@
             <artifactId>hutool-all</artifactId>
             <version>5.8.15</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

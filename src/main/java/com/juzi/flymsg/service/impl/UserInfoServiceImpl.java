@@ -61,20 +61,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
 
         //2、加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes(StandardCharsets.UTF_8));
+        // 每个账号只能注册一次
+        synchronized (userAccount.intern()) {
+            // 3、插入数据库
+            UserInfo userInfo = new UserInfo();
+            userInfo.setUserAccount(userAccount);
+            userInfo.setUserPassword(encryptPassword);
+            this.save(userInfo);
 
-        // 3、插入数据库
-        UserInfo userInfo = new UserInfo();
-        userInfo.setUserAccount(userAccount);
-        userInfo.setUserPassword(encryptPassword);
-        this.save(userInfo);
+            UserLoginInfo loginInfo = new UserLoginInfo();
+            loginInfo.setUserAccount(userAccount);
+            loginInfo.setUserPassword(encryptPassword);
+            loginInfo.setUserId(userInfo.getId());
+            userLoginInfoMapper.insert(loginInfo);
 
-        UserLoginInfo loginInfo = new UserLoginInfo();
-        loginInfo.setUserAccount(userAccount);
-        loginInfo.setUserPassword(encryptPassword);
-        loginInfo.setUserId(userInfo.getId());
-        userLoginInfoMapper.insert(loginInfo);
-
-        return userInfo.getId();
+            return userInfo.getId();
+        }
     }
 
     @Override
@@ -97,7 +99,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
         // 1、校验
         ThrowUtil.throwIf(userUpdateRequest == null, ErrorCode.PARAM_ERROR);
         // 2、获取当前登录用户，判断是否是管理员
-        UserInfoVO loginUserInfoVO = userManager.getCurrentUser(request);
+        UserInfoVO loginUserInfoVO = userManager.getLoginUser(request);
         Long loginUserId = loginUserInfoVO.getUserId();
         UserInfo loginUser = this.getById(loginUserId);
         Integer userRole = loginUser.getUserRole();
@@ -157,7 +159,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
     public List<UserVO> userSelectByName(String searchText, HttpServletRequest request) {
         ThrowUtil.throwIf(StringUtils.isBlank(searchText), ErrorCode.PARAM_ERROR);
         // 获取当前登录用户
-        UserInfoVO currentUser = userManager.getCurrentUser(request);
+        UserInfoVO currentUser = userManager.getLoginUser(request);
         ThrowUtil.throwIf(currentUser == null, ErrorCode.NO_LOGIN, "需要登录后才能查询");
         // select * from userInfo where userName like '%管理%';
         LambdaQueryWrapper<UserInfo> queryWrapper = new LambdaQueryWrapper<>();
@@ -169,6 +171,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo>
             BeanUtils.copyProperties(userInfo, userVO);
             return userVO;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    public UserVO getUserVO(UserInfo userInfo) {
+        if (userInfo == null) {
+            return null;
+        }
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(userInfo, userVO);
+        return userVO;
+    }
+
+    @Override
+    public UserVO getUserVO(UserInfoVO userInfoVO) {
+        Long userId = userInfoVO.getUserId();
+        UserInfo userInfo = this.getById(userId);
+        return this.getUserVO(userInfo);
     }
 }
 

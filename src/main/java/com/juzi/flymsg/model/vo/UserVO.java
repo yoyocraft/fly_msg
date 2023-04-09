@@ -2,6 +2,8 @@ package com.juzi.flymsg.model.vo;
 
 import lombok.Data;
 
+import java.util.Date;
+
 /**
  * 查询用户返回的VO
  *
@@ -39,4 +41,9 @@ public class UserVO {
      * 用户角色：0 - user, 1 - admin
      */
     private Integer userRole;
+
+    /**
+     * 创建时间
+     */
+    private Date createTime;
 }

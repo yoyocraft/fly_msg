@@ -65,7 +65,7 @@ public class UserController {
 
     @GetMapping("/current")
     public BaseResponse<UserInfoVO> getCurrentUser(HttpServletRequest request) {
-        UserInfoVO currentUser = userManager.getCurrentUser(request);
+        UserInfoVO currentUser = userManager.getLoginUser(request);
         return ResultUtil.success(currentUser);
     }
 

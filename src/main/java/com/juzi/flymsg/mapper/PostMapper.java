@@ -1,7 +1,7 @@
 package com.juzi.flymsg.mapper;
 
-import com.juzi.flymsg.model.entity.Post;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.juzi.flymsg.model.entity.Post;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public interface PostMapper extends BaseMapper<Post> {
     /**
      * 模糊查询文章
      *
-     * @param tags    文章标签
+     * @param tags 文章标签
      * @return 文章列表
      */
     List<Post> postListByTags(String tags);
@@ -35,10 +35,33 @@ public interface PostMapper extends BaseMapper<Post> {
      * 根据内容和标签模糊查询
      *
      * @param content 内容
-     * @param tags 标签
+     * @param tags    标签
+     * @param offset 偏移值
+     * @param pageSize 每页显示条数
+     * @param sortField 排序字段
+     * @param isASC  是否是升序
      * @return 帖子列表
      */
-    List<Post> postListByContentAndTags(String content, String tags);
+    List<Post> postListByContentAndTags(String content, String tags,long offset, long pageSize, String sortField, boolean isASC);
+
+    /**
+     * 改变帖子收藏数
+     *
+     * @param postId 帖子id
+     * @param num    1 - 收藏， -1 - 取消收藏
+     * @return true - 执行成功
+     */
+    Boolean updatePostFavours(Long postId, int num);
+
+
+    /**
+     * 改变帖子点赞数
+     *
+     * @param postId 帖子id
+     * @param num    1 - 点赞， -1 - 取消点赞
+     * @return true - 执行成功
+     */
+    boolean updatePostThumbs(Long postId, int num);
 }
 
 
