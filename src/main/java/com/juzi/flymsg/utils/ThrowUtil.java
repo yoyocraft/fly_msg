@@ -11,6 +11,19 @@ import com.juzi.flymsg.exception.BusinessException;
  */
 public class ThrowUtil {
 
+
+    /**
+     * 条件成立则抛异常
+     *
+     * @param condition        条件
+     * @param runtimeException 异常
+     */
+    public static void throwIf(boolean condition, RuntimeException runtimeException) {
+        if (condition) {
+            throw runtimeException;
+        }
+    }
+
     /**
      * if condition, throw
      *
@@ -18,9 +31,7 @@ public class ThrowUtil {
      * @param errorCode 错误码
      */
     public static void throwIf(boolean condition, ErrorCode errorCode) {
-        if(condition) {
-            throw new BusinessException(errorCode);
-        }
+        throwIf(condition, new BusinessException(errorCode));
     }
 
     /**
@@ -31,8 +42,6 @@ public class ThrowUtil {
      * @param description 描述
      */
     public static void throwIf(boolean condition, ErrorCode errorCode, String description) {
-        if(condition) {
-            throw new BusinessException(errorCode, description);
-        }
+        throwIf(condition, new BusinessException(errorCode, description));
     }
 }

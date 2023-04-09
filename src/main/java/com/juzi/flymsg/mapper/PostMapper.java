@@ -31,6 +31,14 @@ public interface PostMapper extends BaseMapper<Post> {
      */
     List<Post> postListByTags(String tags);
 
+    /**
+     * 根据内容和标签模糊查询
+     *
+     * @param content 内容
+     * @param tags 标签
+     * @return 帖子列表
+     */
+    List<Post> postListByContentAndTags(String content, String tags);
 }
 
 

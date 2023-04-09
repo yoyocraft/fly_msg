@@ -9,6 +9,7 @@ import com.juzi.flymsg.manager.UserManager;
 import com.juzi.flymsg.mapper.PostMapper;
 import com.juzi.flymsg.model.dto.post.PostAddRequest;
 import com.juzi.flymsg.model.dto.post.PostDeleteRequest;
+import com.juzi.flymsg.model.dto.post.PostSelectRequest;
 import com.juzi.flymsg.model.dto.post.PostUpdateRequest;
 import com.juzi.flymsg.model.entity.Post;
 import com.juzi.flymsg.model.vo.UserInfoVO;
@@ -148,6 +149,17 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         LambdaQueryWrapper<Post> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(Post::getContent, content);
         return this.list(queryWrapper);
+    }
+
+    @Override
+    public List<Post> postListByContentAndTags(PostSelectRequest postSelectRequest) {
+        ThrowUtil.throwIf(postSelectRequest == null, ErrorCode.PARAM_ERROR);
+        List<String> tagList = postSelectRequest.getTagList();
+        String content = postSelectRequest.getContent();
+        String tags = JSONUtil.toJsonStr(tagList);
+        tags = tags.toLowerCase(Locale.ROOT);
+        // 查询
+        return postMapper.postListByContentAndTags(content, tags);
     }
 }
 

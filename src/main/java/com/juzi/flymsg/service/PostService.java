@@ -3,6 +3,7 @@ package com.juzi.flymsg.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.juzi.flymsg.model.dto.post.PostAddRequest;
 import com.juzi.flymsg.model.dto.post.PostDeleteRequest;
+import com.juzi.flymsg.model.dto.post.PostSelectRequest;
 import com.juzi.flymsg.model.dto.post.PostUpdateRequest;
 import com.juzi.flymsg.model.entity.Post;
 
@@ -91,4 +92,12 @@ public interface PostService extends IService<Post> {
      * @return 文章列表
      */
     List<Post> postListByContent(String content);
+
+    /**
+     * 根据内容和标签模糊查询
+     *
+     * @param postSelectRequest 帖子查询请求信息
+     * @return 帖子列表
+     */
+    List<Post> postListByContentAndTags(PostSelectRequest postSelectRequest);
 }

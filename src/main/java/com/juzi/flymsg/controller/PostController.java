@@ -4,6 +4,7 @@ import com.juzi.flymsg.common.BaseResponse;
 import com.juzi.flymsg.common.ErrorCode;
 import com.juzi.flymsg.model.dto.post.PostAddRequest;
 import com.juzi.flymsg.model.dto.post.PostDeleteRequest;
+import com.juzi.flymsg.model.dto.post.PostSelectRequest;
 import com.juzi.flymsg.model.dto.post.PostUpdateRequest;
 import com.juzi.flymsg.model.entity.Post;
 import com.juzi.flymsg.service.PostService;
@@ -90,6 +91,14 @@ public class PostController {
     public BaseResponse<List<Post>> postListByContent(@RequestParam(value = "content") String searchText) {
         ThrowUtil.throwIf(searchText == null, ErrorCode.PARAM_ERROR);
         List<Post> postList = postService.postListByContent(searchText);
+        return ResultUtil.success(postList);
+    }
+
+    @PostMapping("/list/vague")
+    public BaseResponse<List<Post>> postListByContentAndTags(@RequestBody PostSelectRequest postSelectRequest) {
+        log.info("post list by content and tags, {}", postSelectRequest);
+        ThrowUtil.throwIf(postSelectRequest == null, ErrorCode.PARAM_ERROR);
+        List<Post> postList = postService.postListByContentAndTags(postSelectRequest);
         return ResultUtil.success(postList);
     }
 }

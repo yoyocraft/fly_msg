@@ -46,4 +46,19 @@
             AND JSON_CONTAINS(tags, #{tags}, '$')
         </if>
     </select>
+
+    <select id="postListByContentAndTags" resultType="com.juzi.flymsg.model.entity.Post">
+        SELECT id, title, content, tags, thumbNum, favourNum, userId, createTime, updateTime
+        FROM post
+        WHERE isDelete = 0
+        <trim prefix="AND (" suffix=")" suffixOverrides="OR">
+            <if test="content != null and content != ''">
+                content like #{content}
+                OR
+            </if>
+            <if test="tags != null and tags != ''">
+                JSON_CONTAINS(tags, #{tags}, '$')
+            </if>
+        </trim>
+    </select>
 </mapper>
